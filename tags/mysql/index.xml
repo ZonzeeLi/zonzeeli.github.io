@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>MySQL on Zonzee Li 👨‍💻</title>
+        <link>https://zonzeeli.github.io/tags/mysql/</link>
+        <description>Recent content in MySQL on Zonzee Li 👨‍💻</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Thu, 23 Sep 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://zonzeeli.github.io/tags/mysql/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>SQL——Group By的使用及子句执行顺序</title>
+        <link>https://zonzeeli.github.io/p/sql-groupby/</link>
+        <pubDate>Thu, 23 Sep 2021 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/p/sql-groupby/</guid>
+        <description>&lt;img src="https://zonzeeli.github.io/p/sql-groupby/%E5%88%86%E7%BB%84%E8%83%8C%E6%99%AF.jpg" alt="Featured image of post SQL——Group By的使用及子句执行顺序" /&gt;&lt;h2 id=&#34;group-by概述&#34;&gt;Group By概述&lt;/h2&gt;
+&lt;p&gt;  顾名思义，Group By是将数据分组，将具有相同数据的行放在同一组中，使用Group By我们能对表的数据在可视化的基础上更加清晰的观察同类别、相同值的数据组。&lt;/p&gt;
+&lt;p&gt;注：Group By是先经过排序后再分组。&lt;/p&gt;
+&lt;h2 id=&#34;group-by用法&#34;&gt;Group By用法&lt;/h2&gt;
+&lt;p&gt;  首先最简单的Group By用法就是对单一的列进行分组，比如我想统计每个学校的学生人数：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-mysql&#34; data-lang=&#34;mysql&#34;&gt;&lt;span class=&#34;k&#34;&gt;SELECT&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;School&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;,&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;nf&#34;&gt;COUNT&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;(&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;*&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;)&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;AS&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;StudentNum&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;`&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;FROM&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;Mytable&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;k&#34;&gt;GROUP&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;BY&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;School&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;  利用School字段进行分组，然后统计每一组的行数，这样学生的人数就统计出来了。这里面要说一下Group By的一个语法注意事项，&lt;strong&gt;在Select中出现的字段，只能被包含在Group By语句中作为条件，或者是在聚合函数中使用&lt;/strong&gt;。这一点很容易就被遗漏了，而且在不同的MySQL版本中会出现不一样的提示和报错。&lt;/p&gt;
+&lt;p&gt;  首先表的内容如下，&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/sql-groupby/1.png&#34;
+	width=&#34;240&#34;
+	height=&#34;198&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/sql-groupby/1_hu12ab7d701857370e48e21c4e51171c68_3261_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/sql-groupby/1_hu12ab7d701857370e48e21c4e51171c68_3261_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;121&#34;
+		data-flex-basis=&#34;290px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  然后执行如下语句会报错，如图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/sql-groupby/2.png&#34;
+	width=&#34;966&#34;
+	height=&#34;194&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/sql-groupby/2_hua51ba3f8aa5eced8b61f49280768f82f_8020_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/sql-groupby/2_hua51ba3f8aa5eced8b61f49280768f82f_8020_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;497&#34;
+		data-flex-basis=&#34;1195px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  这里的&lt;code&gt;S1.Score&lt;/code&gt;，就没用被作为Group By的条件，所以不能使用，但是如果是下面这样，将两个字段都作为条件当作列就可以，或者是只用&lt;code&gt;S1.score&lt;/code&gt;也是可以的，如图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/sql-groupby/3.png&#34;
+	width=&#34;280&#34;
+	height=&#34;338&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/sql-groupby/3_huedaeb520ac2996554c09d27883b9af71_5351_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/sql-groupby/3_huedaeb520ac2996554c09d27883b9af71_5351_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;82&#34;
+		data-flex-basis=&#34;198px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  但是呢，之所以我这里强调一下这一点是因为，我在一些刷题网站或者其他地方的虚拟终端、控制台上敲代码的时候，发现有的人这样写的结果竟然没有问题，通过了，还可以作为某些问题的解法，这就让我产生了一些疑惑。首先看一下这段报错。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;ERROR 1055 (42000): Expression #1 of SELECT list is not in GROUP BY clause and contains 
+nonaggregated column &amp;#39;test.S1.Score&amp;#39; which is not functionally dependent on columns in 
+GROUP BY clause; this is incompatible with sql_mode=only_full_group_by
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;  这段错误前半部分就是说明的就是Group By的那个语法要求，如果在Select中出现的列，没有在Group By中出现，或者是聚合函数中使用，那么这个SQL就不合法，但是后半部分&lt;code&gt;this is incompatible with sql_mode=only_full_group_by&lt;/code&gt;，问题就在这里，我后来去查了一下，&lt;strong&gt;在MySQL 5.7.5版本之前&lt;code&gt;only_full_group_by&lt;/code&gt;默认是不开启的&lt;/strong&gt;，所以有个比较狠的方法就是改库。在命令行输入以下命令查看：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;3
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-mysql&#34; data-lang=&#34;mysql&#34;&gt;&lt;span class=&#34;n&#34;&gt;mysql&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;SELECT&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;@@&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;GLOBAL&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sql_mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mysql&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;k&#34;&gt;SELECT&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;o&#34;&gt;@@&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;SESSION&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;.&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sql_mode&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;  查询后如图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/sql-groupby/4.png&#34;
+	width=&#34;744&#34;
+	height=&#34;420&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/sql-groupby/4_hu96bf5206a7360ea76bd361aca60f2295_14162_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/sql-groupby/4_hu96bf5206a7360ea76bd361aca60f2295_14162_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;177&#34;
+		data-flex-basis=&#34;425px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  会查询到&lt;code&gt;only_full_group_by&lt;/code&gt;是开启的，所以把他关闭即可，输入如下命令：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-mysql&#34; data-lang=&#34;mysql&#34;&gt;&lt;span class=&#34;n&#34;&gt;mysql&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;set&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;global&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sql_mode&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;&lt;/span&gt;&lt;span class=&#34;n&#34;&gt;mysql&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;kt&#34;&gt;set&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;session&lt;/span&gt;&lt;span class=&#34;w&#34;&gt; &lt;/span&gt;&lt;span class=&#34;n&#34;&gt;sql_mode&lt;/span&gt;&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s1&#34;&gt;&amp;#39;STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION&amp;#39;&lt;/span&gt;&lt;span class=&#34;p&#34;&gt;;&lt;/span&gt;&lt;span class=&#34;w&#34;&gt;
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;  之后就在MySQL 5.7.5之后的版本使用了。&lt;/p&gt;
+&lt;h2 id=&#34;group-by和having的使用及子句执行顺序&#34;&gt;Group By和Having的使用及子句执行顺序&lt;/h2&gt;
+&lt;p&gt;  这里首先介绍一下Where和Having的使用区别：&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Where子句是在我们查询结果的执行分组前进行过滤，且条件不能使用聚合函数。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;&lt;strong&gt;Having子句是在分组之后进行过滤，条件可以使用聚合函数。&lt;/strong&gt;&lt;/p&gt;
+&lt;p&gt;  所以我们能得到，正常的写法规则，Where要在Group By之前，而Having要在Group By之后，那么接下来就是完整的执行顺序：&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;先执行Where对行进行筛选，返回第1个结果集；&lt;/li&gt;
+&lt;li&gt;再执行Group By进行分组，返回第2个结果集；&lt;/li&gt;
+&lt;li&gt;执行Select，返回第3个结果集；&lt;/li&gt;
+&lt;li&gt;对结果集进行Having筛选，返回第4个结果集；&lt;/li&gt;
+&lt;li&gt;最后执行Order By进行排序&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;  以上执行顺序，配合代码自己梳理一遍会更加的理解清晰。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>git on Zonzee Li 👨‍💻</title>
+        <link>https://zonzeeli.github.io/tags/git/</link>
+        <description>Recent content in git on Zonzee Li 👨‍💻</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Sun, 24 Apr 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://zonzeeli.github.io/tags/git/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>Git——Github网络连接超时解决方案</title>
+        <link>https://zonzeeli.github.io/p/gittimeout/</link>
+        <pubDate>Sun, 24 Apr 2022 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/p/gittimeout/</guid>
+        <description>&lt;img src="https://zonzeeli.github.io/p/gittimeout/gittimeout.jpg" alt="Featured image of post Git——Github网络连接超时解决方案" /&gt;&lt;h2 id=&#34;网络连接超时&#34;&gt;网络连接超时&lt;/h2&gt;
+&lt;p&gt;  很多小伙伴可能会在自己网络或者公司办公时想要进行推送和拉取Github仓库，但是由于Github是国外服务器需要挂载VPN才能访问，不过尽管在网页上访问成功了，&lt;strong&gt;比如我在Chrome上访问Github，或者是部分公司网络有做限制，需要挂VPN才能访问，测试挂载后可以正常访问bilibili&lt;/strong&gt;，但是在&lt;code&gt;idea&lt;/code&gt;或者是&lt;code&gt;cmd/Terminal&lt;/code&gt;上推送依然出现问题，报如下错误：&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-fallback&#34; data-lang=&#34;fallback&#34;&gt;...unable to access &amp;#39;xxxxxxx&amp;#39;: Failed to connect to github.com port 443 after 21092 ms: Timed out
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;  该问题是由于代理导致，当挂在VPN时，我们本地的代理服务设置就自动开启了，(这里声明本人以windows11系统为例，系统语言为英语)，如图：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/gittimeout/proxy.png&#34;
+	width=&#34;1037&#34;
+	height=&#34;688&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/gittimeout/proxy_hu4fc538e6d2ece9cfe9311d3aabb5556f_111547_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/gittimeout/proxy_hu4fc538e6d2ece9cfe9311d3aabb5556f_111547_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;150&#34;
+		data-flex-basis=&#34;361px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;   如果挂了VPN，这个手动配置代理服务器(Manual proxy setup)应该是会自动开启的，&lt;strong&gt;同样，如果没有挂代理这里应该关闭，很多人可能挂了代理关机重启后连不上网，就是因为这里还是开启的，应该关闭&lt;/strong&gt;，&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/gittimeout/internetproxy.jpg&#34;
+	width=&#34;1037&#34;
+	height=&#34;688&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/gittimeout/internetproxy_huffae13d60625aa9a736e82f376dd1379_117905_480x0_resize_q75_box.jpg 480w, https://zonzeeli.github.io/p/gittimeout/internetproxy_huffae13d60625aa9a736e82f376dd1379_117905_1024x0_resize_q75_box.jpg 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;150&#34;
+		data-flex-basis=&#34;361px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;   点开编辑(Edit)，可以看到我们的代理ip和port，&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/gittimeout/port.png&#34;
+	width=&#34;1037&#34;
+	height=&#34;688&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/gittimeout/port_huf421e68368892024e8f8edcae013cc5e_92837_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/gittimeout/port_huf421e68368892024e8f8edcae013cc5e_92837_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;150&#34;
+		data-flex-basis=&#34;361px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;   我们的访问的github也是走这个代理的，所以要在终端运行，&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;span class=&#34;lnt&#34;&gt;2
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-bash&#34; data-lang=&#34;bash&#34;&gt;git config --global http.proxy 127.0.0.1:10080  // 全局&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;后面的端口根据自己的端口决定&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+git config --local http.proxy 127.0.0.1:10080 // 项目&lt;span class=&#34;o&#34;&gt;(&lt;/span&gt;推荐使用&lt;span class=&#34;o&#34;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;   需要注意一点，这里的端口可能会每次挂在VPN都会变化，所以每次都需要重新配置。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

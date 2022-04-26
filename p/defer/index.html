@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Go语言延迟函数defer的使用介绍和一些问题解释'><title>Go语言——延迟函数defer的使用</title>
+
+<link rel='canonical' href='https://zonzeeli.github.io/p/defer/'>
+
+<link rel="stylesheet" href="/scss/style.min.450926226e724574a6b936335ea06111f8aeb253d932c86cb2cc807341cd2889.css"><meta property='og:title' content='Go语言——延迟函数defer的使用'>
+<meta property='og:description' content='Go语言延迟函数defer的使用介绍和一些问题解释'>
+<meta property='og:url' content='https://zonzeeli.github.io/p/defer/'>
+<meta property='og:site_name' content='Zonzee Li 👨‍💻'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='算法' /><meta property='article:tag' content='go' /><meta property='article:published_time' content='2022-03-08T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2022-03-08T00:00:00&#43;00:00'/><meta property='og:image' content='https://zonzeeli.github.io/p/defer/godefer.jpg' />
+<meta name="twitter:title" content="Go语言——延迟函数defer的使用">
+<meta name="twitter:description" content="Go语言延迟函数defer的使用介绍和一些问题解释"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://zonzeeli.github.io/p/defer/godefer.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu77a3462afc37200b06a1519079618b2f_1084312_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">💻</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Zonzee Li 👨‍💻</a></h1>
+            <h2 class="site-description">一个耐心学习的小程序员。记录生活，享受生活的Gopher。</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/ZonzeeLi'
+                        target="_blank"
+                        title="GitHub"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about-me/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About me</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/defer/">
+                <img src="/p/defer/godefer_hu7e4671ba8c4acd05ae2c2aa9b1ac6fe3_177012_800x0_resize_q75_box.jpg"
+                        srcset="/p/defer/godefer_hu7e4671ba8c4acd05ae2c2aa9b1ac6fe3_177012_800x0_resize_q75_box.jpg 800w, /p/defer/godefer_hu7e4671ba8c4acd05ae2c2aa9b1ac6fe3_177012_1600x0_resize_q75_box.jpg 1600w"
+                        width="800" 
+                        height="542" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——延迟函数defer的使用" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/go/" >
+                Go
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/defer/">Go语言——延迟函数defer的使用</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            Go语言延迟函数defer的使用介绍和一些问题解释
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Mar 08, 2022</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    5 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="延迟函数defer">延迟函数(defer)</h2>
+<p>  延迟函数，顾名思义，是在之后执行的函数，那么具体怎么个之后法呢？在函数调用的过程中，可以理解为调用函数的过程是一个链表，a-&gt;b-&gt;c，整个调用过程是先a再b再c，而延迟函数就是在调用a的程序过程中写入一个延迟执行，在a函数return之后添加一个函数调用。因此，defer的常用功能为释放资源、关闭连接、捕获错误等，这是一种语言保护机制。举个例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">Open</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">f</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span>
+	<span class="p">}</span> <span class="c1">// 如果此处Open函数没有问题，继续向下
+</span><span class="c1"></span>	<span class="nx">s</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Create</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="c1">// 如果此处发生error，那么直接return，后面的两个close都不执行
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="nx">f</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="nx">s</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="k">return</span> 
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  上面这段代码中如果Open函数正常执行，但是Create函数错了，返回错误时下面的close函数没有办法执行，就会导致f没有关闭，但是我们又不能直接写在上面，因为还没对f进行操作就关闭了文件，所以这里就要使用延迟函数了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">Open</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">f</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span>
+	<span class="p">}</span>
+	<span class="k">defer</span> <span class="nx">f</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span> <span class="c1">// 注意这里还有一个坑，下面再介绍
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  接下来我们就介绍defer的使用：</p>
+<h2 id="defer的执行参数">defer的执行参数</h2>
+<p>  defer的执行参数在defer写入的位置就已经确定好了，也就是说，defer并不只是单单在return之后执行，而是在准备延迟调用的时候，就已经把参数一并压入堆栈中等待执行。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">x</span> <span class="o">:=</span> <span class="mi">5</span>
+	<span class="k">defer</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="c1">// 这个时候已经将x=5传参给print函数了
+</span><span class="c1"></span>	<span class="nx">x</span><span class="o">++</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span>
+	<span class="c1">// 结果打印为6 5 (注意正常是换行打印，为了看起来方便就这么写了，后面也一样)
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  思考一下这样写结果呢？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span><span class="lnt">9
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">x</span> <span class="o">:=</span> <span class="mi">5</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> <span class="c1">// 这里相当于一个闭包，defer执行的是一个func()，但是func()不需要任何参数，而是去执行打印x，这时候x就打印出为6了，请区分和下面的匿名函数的问题
+</span><span class="c1"></span>	<span class="p">}()</span>
+	<span class="nx">x</span><span class="o">++</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span>
+	<span class="c1">// 结果打印为6 6
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="defer的执行顺序">defer的执行顺序</h2>
+<p>  在知道了defer的执行参数后就需要知道defer的执行顺序，如果有多条defer语句的话，根据压入顺序，最后是逆序执行的。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">x</span> <span class="o">:=</span> <span class="mi">5</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// 最后执行
+</span><span class="c1"></span>		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">x</span><span class="p">)</span> 
+	<span class="p">}()</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// 再执行
+</span><span class="c1"></span>		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;ZonzeeLi&#34;</span><span class="p">)</span> 
+		<span class="nx">x</span><span class="o">++</span>
+	<span class="p">}()</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span> <span class="c1">// 先执行
+</span><span class="c1"></span>		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;你好&#34;</span><span class="p">)</span> 
+	<span class="p">}()</span>
+	<span class="c1">// 结果打印为 你好 ZonzeeLi 6
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="defer对匿名返回值的返回处理">defer对匿名返回值的返回处理</h2>
+<p>  我们在自己写一个func()的时候经常会写返回值，但是返回值时分命名和匿名两种，这在defer中又有区别了，我们看下面代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">f1</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="nx">x</span> <span class="o">:=</span> <span class="mi">5</span> 
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">x</span><span class="o">++</span>
+		<span class="c1">// 在这个地方加一个打印x，看看结果是多少？
+</span><span class="c1"></span>	<span class="p">}()</span>
+	<span class="k">return</span> <span class="nx">x</span>
+	<span class="c1">// 这个函数返回5
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">f2</span><span class="p">()</span> <span class="p">(</span><span class="nx">x</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 如果把这个x换成y的话，返回结果是多少？
+</span><span class="c1"></span>	<span class="c1">//x = 0
+</span><span class="c1"></span>	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">x</span><span class="o">++</span>
+	<span class="p">}()</span>
+	<span class="k">return</span> <span class="mi">5</span>
+	<span class="c1">// 这个函数返回6
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">f4</span><span class="p">()</span> <span class="p">(</span><span class="nx">x</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span> <span class="c1">// 这个返回是多少？
+</span><span class="c1"></span>	<span class="k">defer</span> <span class="kd">func</span><span class="p">(</span><span class="nx">x</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+		<span class="nx">x</span><span class="o">++</span>
+		<span class="c1">// 这里加一个打印x，打印的是多少？
+</span><span class="c1"></span>	<span class="p">}(</span><span class="nx">x</span><span class="p">)</span>
+	<span class="k">return</span> <span class="mi">50</span>
+	<span class="c1">// 这个结果返回为50，请自行思考，解释参考上面的defer执行参数
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  f1中使用的是匿名返回值，f2中使用的是命名返回值，f1的匿名返回值，相当于返回x的一个副本给f1的return，所以对x进行x++操作没有对return进行影响，而有命名返回值则不同，defer的作用域始终是在这个函数内的，所以使用的返回值就是x。</p>
+<h2 id="defer-panic-recover的配合使用">defer panic recover的配合使用</h2>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span><span class="lnt">8
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">test</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nf">test</span><span class="p">()</span> <span class="c1">// 结果为panic: 1， 不会打印2
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  我们知道如果函数panic了，就直接终止运行了，后面的语句都不会执行，但是如果我们想要执行的话就需要recover，这时候defer的延迟使用就非常有帮助了。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">test</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;捕获成功啦！&#34;</span><span class="p">)</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
+	<span class="nb">panic</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nf">test</span><span class="p">()</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c1">// 结果为 捕获成功啦！2
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  另外这里要注意的是，如果连续调用panic，仅最后一个会被recover捕获。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">for</span> <span class="p">{</span>
+			<span class="k">if</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nb">recover</span><span class="p">();</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+				<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">err</span><span class="p">)</span>
+			<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+				<span class="nx">log</span><span class="p">.</span><span class="nf">Fatalln</span><span class="p">(</span><span class="s">&#34;fatal&#34;</span><span class="p">)</span>
+			<span class="p">}</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
+
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;you are dead&#34;</span><span class="p">)</span>
+	<span class="p">}()</span>
+
+	<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;i am dead&#34;</span><span class="p">)</span>
+	
+	<span class="c1">// 结果为
+</span><span class="c1"></span>	<span class="c1">// 2022/03/08 15:58:08 you are dead
+</span><span class="c1"></span>	<span class="c1">// 2022/03/08 15:58:08 fatal
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  既然说到这，我就补充一下，defer中直接调用recover是无效的，举例如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nb">recover</span><span class="p">())</span> <span class="c1">// 无效
+</span><span class="c1"></span>	<span class="k">defer</span> <span class="nb">recover</span><span class="p">()</span> <span class="c1">// 无效
+</span><span class="c1"></span>	
+	<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;i am dead&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h2 id="常见的defer面试题和坑">常见的defer面试题和坑</h2>
+<p>  以上将defer的几个用法介绍完了，下面我总结了在一些博主的文章中看到的问题和平常遇见的坑：</p>
+<h4 id="问题一一道面试题出自李文周的博客httpswwwliwenzhoucom">问题一，一道面试题，出自<a class="link" href="https://www.liwenzhou.com/"  target="_blank" rel="noopener"
+    >李文周的博客</a></h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">calc</span><span class="p">(</span><span class="nx">index</span> <span class="kt">string</span><span class="p">,</span> <span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+	<span class="nx">ret</span> <span class="o">:=</span> <span class="nx">a</span> <span class="o">+</span> <span class="nx">b</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">index</span><span class="p">,</span> <span class="nx">a</span><span class="p">,</span> <span class="nx">b</span><span class="p">,</span> <span class="nx">ret</span><span class="p">)</span>
+	<span class="k">return</span> <span class="nx">ret</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">x</span> <span class="o">:=</span> <span class="mi">1</span>
+	<span class="nx">y</span> <span class="o">:=</span> <span class="mi">2</span>
+	<span class="k">defer</span> <span class="nf">calc</span><span class="p">(</span><span class="s">&#34;AA&#34;</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nf">calc</span><span class="p">(</span><span class="s">&#34;A&#34;</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">))</span> <span class="c1">// 先执行了calc(&#34;A&#34;, x, y)，然后再压入defer执行语句和defer需要的参数
+</span><span class="c1"></span>	<span class="nx">x</span> <span class="p">=</span> <span class="mi">10</span>
+	<span class="k">defer</span> <span class="nf">calc</span><span class="p">(</span><span class="s">&#34;BB&#34;</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nf">calc</span><span class="p">(</span><span class="s">&#34;B&#34;</span><span class="p">,</span> <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span><span class="p">))</span>
+	<span class="nx">y</span> <span class="p">=</span> <span class="mi">20</span>
+	<span class="c1">// 结果打印为
+</span><span class="c1"></span>	<span class="c1">// A 1 2 3
+</span><span class="c1"></span>	<span class="c1">// B 10 2 12
+</span><span class="c1"></span>	<span class="c1">// BB 10 12 22
+</span><span class="c1"></span>	<span class="c1">// AA 1 3 4
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  上面的这个解释还是主要由defer的执行参数有关系，首先再执行<code>defer calc(&quot;AA&quot;, x, calc(&quot;A&quot;, x, y))</code>，他的三个参数就已经确定了，那么第三个参数是由<code>calc(&quot;A&quot;, x, y)</code>的返回值决定的，所以这个时候就会先执行这一条，然后将参数一同压入栈，将延迟函数压入函数调用，下面的<code>defer calc(&quot;BB&quot;, x, calc(&quot;B&quot;, x, y))</code>也同理。</p>
+<h4 id="问题二for循环导致性能问题出自go语言学习笔记">问题二，for循环导致性能问题，出自《Go语言学习笔记》</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">test</span><span class="p">()</span> <span class="p">{</span>
+	<span class="o">...</span>
+	<span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span><span class="nx">i</span> <span class="p">&lt;</span> <span class="nx">n</span><span class="p">;</span><span class="nx">i</span> <span class="o">++</span> <span class="p">{</span>
+		<span class="nx">f</span><span class="p">,</span> <span class="nx">_</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
+		<span class="k">defer</span> <span class="nx">f</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  上面的代码其实没什么运行问题，只是defer的执行需要尽心很多压栈出栈以及内存使用的操作，会消耗很多资源，所以应该直接执行或者封装。</p>
+<h4 id="问题三defer语句的位置出自牛客网go语言面试题">问题三，defer语句的位置，出自牛客网Go语言面试题</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">Open</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">f</span><span class="p">,</span> <span class="nx">err</span> <span class="o">:=</span> <span class="nx">os</span><span class="p">.</span><span class="nf">Open</span><span class="p">(</span><span class="s">&#34;&#34;</span><span class="p">)</span>
+	<span class="k">defer</span> <span class="nx">f</span><span class="p">.</span><span class="nf">Close</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="o">...</span>
+		<span class="k">return</span> 
+	<span class="p">}</span>
+	<span class="c1">// defer f.Close()
+</span><span class="c1"></span>	<span class="o">...</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  上面的代码写法有什么问题？也正常执行延迟Close了？问题在于defer语句的位置，如果写在判断err然后return之前，如果Open发生异常，那么f就是空指针，在return之后执行<code>defer f.Close()</code>就会报空指针错误，所以要在处理玩错误，return之后执行defer。</p>
+<h4 id="问题四如下代码当函数deferdemo返回失败时并不能destroy已create成功的资源这一说法是否正确出自牛客网go语言面试题">问题四，如下代码，当函数deferDemo()返回失败时，并不能destroy已create成功的资源，这一说法是否正确，出自牛客网Go语言面试题</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span><span class="lnt">32
+</span><span class="lnt">33
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">deferDemo</span><span class="p">()</span> <span class="kt">error</span> <span class="p">{</span>
+	<span class="nx">err</span> <span class="o">:=</span> <span class="nf">createResource1</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">ERR_CREATE_RESOURCE1_FAILED</span> <span class="c1">// 如果1失败，直接返回没有任何创建成功的资源
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span> 
+			<span class="nf">destroyResource1</span><span class="p">()</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
+
+	<span class="nx">err</span> <span class="p">=</span> <span class="nf">createResource2</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">ERR_CREATE_RESOURCE2_FAILED</span> <span class="c1">// 如果2创建失败，那么执行上面的defer，destroy已经创建的1
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nf">destroyResource2</span><span class="p">()</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
+
+	<span class="nx">err</span> <span class="p">=</span> <span class="nf">createResource3</span><span class="p">()</span>
+	<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+		<span class="k">return</span> <span class="nx">ERR_CREATE_RESOURCE3_FAILED</span> <span class="c1">// 同理
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">if</span> <span class="nx">err</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span>
+			<span class="nf">destroyResource3</span><span class="p">()</span>
+		<span class="p">}</span>
+	<span class="p">}()</span>
+	
+	<span class="k">return</span> <span class="kc">nil</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  正确答案是错误，也就是如果返回失败，可以destroy已经create的资源，解释如下，如果返回成功，不需要讨论，如果返回失败，我们假设在<code>createResource1()</code>处失败，这时候2、3都没有进行创建，1也没有创建成功，直接返回，所以没有创建成功的资源，不需要destroy，如果在<code>createResource2()</code>，这时候<code>err</code>有了值，在返回2失败后，执行了上面1成功后压入的defer，破坏了1，下面的3也同理。</p>
+<h4 id="问题五下面这段话是否正确出自牛客网go语言面试题">问题五，下面这段话是否正确，出自牛客网Go语言面试题</h4>
+<p>  <em>当程序运行时，如果遇到引用空指针、下标越界或显式调用panic函数等情况，则先触发panic函数的执行，然后调用延迟函数。调用者继续传递panic，因此该过程一直在调用栈中重复发生：函数停止执行，调用延迟执行函数。如果一路在延迟函数中没有recover函数的调用，则会到达该协程的起点，该协程结束，然后终止其他所有协程，其他协程的终止过程也是重复发生：函数停止执行，调用延迟执行函数。这一说法是否正确。</em></p>
+<p>  答案是错误的，上面的这段话需要注意的是一个地方，<code>则先触发panic函数的执行，然后调用延迟函数</code>，panic是需要等defer结束后才会向上传递，出现panic，会先按照defer的逆序执行顺序，执行完之后才会执行panic。有一段大佬的完整解释为：“<em>当内置的panic()函数调用时，外围函数或方法的执行会立即终止。然后，任何延迟执行(defer)的函数或方法都会被调用，就像其外围函数正常返回一样。最后，调用返回到该外围函数的调用者，就像该外围调用函数或方法调用了panic()一样，因此该过程一直在调用栈中重复发生：函数停止执行，调用延迟执行函数等。当到达main()函数时不再有可以返回的调用者，因此这个过程会终止，并将包含传入原始panic()函数中的值的调用栈信息输出到os.Stderr</em>”，可以举个例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">test</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;test.1&#34;</span><span class="p">)</span>
+	<span class="k">defer</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;test.2&#34;</span><span class="p">)</span>
+
+	<span class="nb">panic</span><span class="p">(</span><span class="s">&#34;i am dead&#34;</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">log</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nb">recover</span><span class="p">())</span>
+	<span class="p">}()</span>
+	<span class="nf">test</span><span class="p">()</span>
+	<span class="c1">// 结果为
+</span><span class="c1"></span>	<span class="c1">// test.2
+</span><span class="c1"></span>	<span class="c1">// test.1
+</span><span class="c1"></span>	<span class="c1">// 2022/03/07 15:53:27 i am dead
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="问题六思考结果出自coding进阶公众号文章httpsmpweixinqqcomsrjuz2lvpak26comjjwq7wa">问题六，思考结果，出自<a class="link" href="https://mp.weixin.qq.com/s/RJUz2LvpAK26CoMjjwQ7wA"  target="_blank" rel="noopener"
+    >coding进阶公众号文章</a></h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">bar</span><span class="p">()</span> <span class="p">(</span><span class="nx">r</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">r</span> <span class="o">+=</span> <span class="mi">4</span> <span class="c1">// 3. r += 4
+</span><span class="c1"></span>		<span class="k">if</span> <span class="nb">recover</span><span class="p">()</span> <span class="o">!=</span> <span class="kc">nil</span> <span class="p">{</span> <span class="c1">// 4. recover()捕获成功
+</span><span class="c1"></span>			<span class="nx">r</span> <span class="o">+=</span> <span class="mi">8</span> <span class="c1">// 5.r += 8 输出 13 
+</span><span class="c1"></span>		<span class="p">}</span>
+	<span class="p">}()</span>
+
+	<span class="kd">var</span> <span class="nx">f</span> <span class="kd">func</span><span class="p">()</span>
+	<span class="k">defer</span> <span class="nf">f</span><span class="p">()</span> <span class="c1">// 2.先执行这个，但是因为defer语句的位置，f()报错
+</span><span class="c1"></span>	<span class="nx">f</span> <span class="p">=</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">r</span> <span class="o">+=</span> <span class="mi">2</span>
+	<span class="p">}</span>
+
+	<span class="k">return</span> <span class="mi">1</span> <span class="c1">// 1.先给r进行赋值
+</span><span class="c1"></span><span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nb">println</span><span class="p">(</span><span class="nf">bar</span><span class="p">())</span> <span class="c1">//结果为13
+</span><span class="c1"></span><span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>  答案是13，你思考对了么？这道题的关键在于那个<code>defer f()</code>，此处因为defer语句的写法位置，因为<code>var f func()</code>，f()是空指针，而直接进行<code>defer f()</code>，在对f()赋值，所以在defer中会panic，这个就和上面说的问题三一样了，所以正确的执行顺序是，返回1给r，然后<code>defer f()</code>直接panic，再向上进行，<code>r += 4</code>然后再<code>recover()</code>捕获了panic，执行了<code>r += 8</code>。</p>
+<h4 id="问题七思考结果出自coding进阶">问题七，思考结果，出自coding进阶</h4>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="nb">recover</span><span class="p">())</span> <span class="c1">// 4.同理捕获到了1
+</span><span class="c1"></span>	<span class="p">}()</span>
+	<span class="k">defer</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+		<span class="k">defer</span> <span class="nx">fmt</span><span class="p">.</span><span class="nf">Print</span><span class="p">(</span><span class="nb">recover</span><span class="p">())</span> <span class="c1">// 2.先解析了参数，所以这里先执行了recover()，这时候还没有按照defer的逆序执行，所以先把2捕获到了
+</span><span class="c1"></span>		<span class="k">defer</span> <span class="nb">panic</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+		<span class="nb">recover</span><span class="p">()</span> <span class="c1">// 3.有效，但是被截胡了
+</span><span class="c1"></span>	<span class="p">}()</span>
+	<span class="k">defer</span> <span class="nb">recover</span><span class="p">()</span> <span class="c1">// 1.无效
+</span><span class="c1"></span>	<span class="nb">panic</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  结果是21，你回答对了么？我猜测多数人会回答nil1，还有人会回答nil，我这里分别解释一下，回答nil的是因为没理解recover的使用，recover必须配合defer的函数体直接调用使用，否则都会捕获无效，这个在上面都有介绍到，所以第一个defer(从下往上)是无效的，回答为nil1的是注意到了很多，但是最关键的在<code>fmt.Print(recover())</code>中，<code>recover()</code>作为参数被defer中的func调用，要先执行参数解析，所以2就会被先捕获到，而不是正常的先捕获经过头插法的最近panic，同理最上面的defer就捕获到了1。</p>
+<hr>
+<p>  延迟函数defer的基础使用就差不多介绍这些，具体太细的，以及配合panic和recover使用的需要看底层和汇编才能理解的更透彻。</p>
+<p>  Coding every day，let&rsquo;s go!</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+        
+            <a href="/tags/go/">go</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    
+
+<aside class="related-contents--wrapper">
+    <h2 class="section-title">Related contents</h2>
+    <div class="related-contents">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/slice/">
+        
+        
+            <div class="article-image">
+                <img src="/p/slice/goslice.3df9ec6a4a7200a05eedc5bd83b9af7a_hu1b4159d9ef01abf89b1c5b948d41a0fb_1054267_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——切片(Slice)的坑"
+                        data-key="slice" 
+                        data-hash="md5-PfnsakpyAKBe7cW9g7mveg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——切片(Slice)的坑</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/memory-alignment/">
+        
+        
+            <div class="article-image">
+                <img src="/p/memory-alignment/memoryalignment.cf5bdaf3e8024a4ec58c5ab91f7efffa_hu02570da8dff591db14e92b986bdd1dc3_682341_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——内存对齐"
+                        data-key="memory-alignment" 
+                        data-hash="md5-z1va8&#43;gCSk7FjFq5H37/&#43;g==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——内存对齐</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/map/">
+        
+        
+            <div class="article-image">
+                <img src="/p/map/gomap.c14fa8e9b6a98316f81135a702615a97_hueb06b1d9a0d79dfdcc90f95f1ba3b9ea_886458_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——Map的底层介绍及扩缩容机制"
+                        data-key="map" 
+                        data-hash="md5-wU&#43;o6bapgxb4ETWnAmFalw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——Map的底层介绍及扩缩容机制</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/heap/">
+        
+        
+            <div class="article-image">
+                <img src="/p/heap/heapbgi.c7eb47b162f8232662361b8c18a3d3e5_huc5d87bcdba7a5bdb2d2f31e795ea4b08_530172_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 数据结构与算法——堆结构"
+                        data-key="heap" 
+                        data-hash="md5-x&#43;tHsWL4IyZiNhuMGKPT5Q==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">数据结构与算法——堆结构</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 Zonzee Li 👨‍💻
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.11.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#延迟函数defer">延迟函数(defer)</a></li>
+    <li><a href="#defer的执行参数">defer的执行参数</a></li>
+    <li><a href="#defer的执行顺序">defer的执行顺序</a></li>
+    <li><a href="#defer对匿名返回值的返回处理">defer对匿名返回值的返回处理</a></li>
+    <li><a href="#defer-panic-recover的配合使用">defer panic recover的配合使用</a></li>
+    <li><a href="#常见的defer面试题和坑">常见的defer面试题和坑</a>
+      <ol>
+        <li>
+          <ol>
+            <li><a href="#问题一一道面试题出自李文周的博客httpswwwliwenzhoucom">问题一，一道面试题，出自<a href="https://www.liwenzhou.com/">李文周的博客</a></a></li>
+            <li><a href="#问题二for循环导致性能问题出自go语言学习笔记">问题二，for循环导致性能问题，出自《Go语言学习笔记》</a></li>
+            <li><a href="#问题三defer语句的位置出自牛客网go语言面试题">问题三，defer语句的位置，出自牛客网Go语言面试题</a></li>
+            <li><a href="#问题四如下代码当函数deferdemo返回失败时并不能destroy已create成功的资源这一说法是否正确出自牛客网go语言面试题">问题四，如下代码，当函数deferDemo()返回失败时，并不能destroy已create成功的资源，这一说法是否正确，出自牛客网Go语言面试题</a></li>
+            <li><a href="#问题五下面这段话是否正确出自牛客网go语言面试题">问题五，下面这段话是否正确，出自牛客网Go语言面试题</a></li>
+            <li><a href="#问题六思考结果出自coding进阶公众号文章httpsmpweixinqqcomsrjuz2lvpak26comjjwq7wa">问题六，思考结果，出自<a href="https://mp.weixin.qq.com/s/RJUz2LvpAK26CoMjjwQ7wA">coding进阶公众号文章</a></a></li>
+            <li><a href="#问题七思考结果出自coding进阶">问题七，思考结果，出自coding进阶</a></li>
+          </ol>
+        </li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

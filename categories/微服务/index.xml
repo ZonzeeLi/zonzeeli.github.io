@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>微服务 on Zonzee Li 👨‍💻</title>
+        <link>https://zonzeeli.github.io/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/</link>
+        <description>Recent content in 微服务 on Zonzee Li 👨‍💻</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Sun, 25 Jul 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://zonzeeli.github.io/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>浅析微服务之Service Mesh</title>
+        <link>https://zonzeeli.github.io/p/service-mesh/</link>
+        <pubDate>Sun, 25 Jul 2021 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/p/service-mesh/</guid>
+        <description>&lt;img src="https://zonzeeli.github.io/p/service-mesh/ServiceMesh%E8%83%8C%E6%99%AF%E5%9B%BE.jpg" alt="Featured image of post 浅析微服务之Service Mesh" /&gt;&lt;h2 id=&#34;前言&#34;&gt;前言&lt;/h2&gt;
+&lt;p&gt;  你是否在面对任务、需求的时候考虑过复杂繁琐的单体应用？单体应用无论是逻辑梳理、排查问题和内容划分等各方面都会花费很多的时间和人力。在云计算快速发展的现在，微服务架构是业界开发应用的主要方式，尤其是现在正处于云原生的时代，微服务对运维、开发人员的工作相对变得容易。&lt;/p&gt;
+&lt;p&gt;  但是微服务真的就完美了么？当然不是。单体应用的数据库、运维部署、技术开发等模块都是紧密联系在一起的，有时候一个功能需求写个超级长的代码负责给一个人也是能够解决的。而微服务就是从单体应用转变成了好多个，这样子在运维方面就变得复杂，不仅如此，以往的模块间属于进程间通信，微服务就只能使用RPC通讯方式。在这种情况下，Service Mesh出现了，有人提出Service Mesh是下一代微服务的基础。&lt;/p&gt;
+&lt;h2 id=&#34;什么是service-mesh&#34;&gt;什么是Service Mesh？&lt;/h2&gt;
+&lt;p&gt;  &lt;em&gt;“A service mesh is a dedicated infrastructure layer for handling service-to-service communication. It’s responsible for the reliable delivery of requests through the complex topology of services that comprise a modern, cloud native application. In practice, the service mesh is typically implemented as an array of lightweight network proxies that are deployed alongside application code, without the application needing to be aware.”&lt;/em&gt;  ————&lt;em&gt;Willian Morgan (Buoyant CEO)&lt;/em&gt;&lt;/p&gt;
+&lt;p&gt;  上面的这段话是Service Mesh的创造者给出的定义。这段英文中有几处关键的地方，如 &lt;strong&gt;“service-to-service communication ”&lt;/strong&gt;、&lt;strong&gt;“reliable delivery of requests”&lt;/strong&gt;、&lt;strong&gt;“cloud native application”&lt;/strong&gt;、&lt;strong&gt;“lightweight network proxies”&lt;/strong&gt;。总结来讲，Service Mesh是用来处理服务之间通讯连接，并且实现可靠的请求发送的轻量级网络代理，这些网络代理一定是跟应用部署在一起，但对应用透明。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/service-mesh/%E6%9E%B6%E6%9E%84%E5%9B%BE.png&#34;
+	width=&#34;640&#34;
+	height=&#34;408&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/service-mesh/%E6%9E%B6%E6%9E%84%E5%9B%BE_hube64aafe5f4bfcafd714b7997c59cb57_12786_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/service-mesh/%E6%9E%B6%E6%9E%84%E5%9B%BE_hube64aafe5f4bfcafd714b7997c59cb57_12786_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;第二代Service Mesh架构图&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;156&#34;
+		data-flex-basis=&#34;376px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  如果说云原生时代下的DevOps与容器化可以解决庞大的构建部署问题，实现自动化管理。那么Service Mesh就如定义说的一样，解决了服务之间的通信问题，让服务在非进程间也变得紧密，通信更加容易。&lt;/p&gt;
+&lt;h2 id=&#34;service-mesh的起源与发展&#34;&gt;Service Mesh的起源与发展&lt;/h2&gt;
+&lt;p&gt;  对于微服务引用的问题，类似于Spring Cloud、gRPC等框架解决了分布式的一些通信问题，关键是简化了开发，所以在微服务时代下发展的很快，但是同样如果去掌握、理解框架本身是一件难事，而且尽管梳理清晰了，业务逻辑和通信部分融合在一起，也会出现问题，更何况有时候甚至出现兼容性问题。另外就是支持的语言，gRPC框架支持了跨语言间的通信服务连接，但是有多少个语言就需要多少个类库，而且没有支持的就很难接入微服务，这对于整个架构来讲也是一个痛点。&lt;/p&gt;
+&lt;p&gt;  最开始的应用在Linkerd上的Service Mesh是边车模式(Sidecar)，客户端应用实例会请求发送到本地的Service Mesh实例上，上面说的是非进程间通信，所以这两个是独立的进程，Service Mesh同样会实现负载均衡(Load Balancing)、服务发现(Service Discovery)、服务熔断(Circuit Breaker)和安全通讯等，还会负责动态路由、容错限流、监控日志等，其实说白了就是通过一个代理，实现了通信，完成了服务之间的通信请求。而Service Mesh就正如翻译的那样，通过这些代理连接形成网格实现连接。正如下面的图片一样，绿色代表的是应用，蓝色就是代理。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/service-mesh/%E7%BD%91%E6%A0%BC%E5%9B%BE.png&#34;
+	width=&#34;490&#34;
+	height=&#34;283&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/service-mesh/%E7%BD%91%E6%A0%BC%E5%9B%BE_hu2049a30664a8df8160fcc0ef0cecbb03_155684_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/service-mesh/%E7%BD%91%E6%A0%BC%E5%9B%BE_hu2049a30664a8df8160fcc0ef0cecbb03_155684_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;绿色代表的是应用程序，蓝色的是代理&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;173&#34;
+		data-flex-basis=&#34;415px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  之后出现了Envoy，Envoy是一种高性能C++分布式代理，也是边车模式，任务是完成请求发送，解决通信问题，Envoy其实可以效仿一下网络模型的流程思路，采用监听端口Listener，然后可以对网络请求的数据进行处理、添加、校验等等，根据源数据层次不同，可以分为L3、L4、L7层，请求发出去到后端后，又根据集群模式进行负载均衡等等，另外Envoy可以支持根据路由规则发送给Cluster，在HTTP /1和HTTP /2之间是透明的。&lt;/p&gt;
+&lt;p&gt;  直到Istio的出现，译义为“起航”，它的logo也是一个帆船，这个是Service Mesh最火热的框架，引入了一个集中式的控制平面，官方给出的架构图，也是为了数据和控制两块，数据利用Envoy代理组件，处理分布式系统的网络问题，而控制平面由Pilot、Mixer、Citadel和Galley四个组件负责。Istio不仅提供了关键功能如流量控制、面板观察、安全验证等，还有提供了高集成和定制，但目前还只是对Kubernetes友好。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/service-mesh/Istio%E6%9E%B6%E6%9E%84%E5%9B%BE.png&#34;
+	width=&#34;640&#34;
+	height=&#34;358&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/service-mesh/Istio%E6%9E%B6%E6%9E%84%E5%9B%BE_huc649d01ed4ab24978b3f3225b36f088e_98783_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/service-mesh/Istio%E6%9E%B6%E6%9E%84%E5%9B%BE_huc649d01ed4ab24978b3f3225b36f088e_98783_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+		alt=&#34;Istio的数据平面和控制平面架构图&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;178&#34;
+		data-flex-basis=&#34;429px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h2 id=&#34;真的需要service-mesh吗&#34;&gt;真的需要Service Mesh吗？&lt;/h2&gt;
+&lt;p&gt;  就我个人的粗略看法，毕竟没有深入那么多，只是在表层了解了一下，我认为还是很需要Service Mesh。它更大程度的简化了通信、远程调用的方式，而且几乎所有语言支持，这样子对任何一个开发人员都很友好。在一个业务开发团队中，或者说大一点到一个公司的应用服务体系，有时候一个关键、方便的架构有利于业务的实现，减少业务压力，这就好比一个程序员把自己写好的一个库、函数、脚本封装起来为了更简单的调用一样，一切都是想要在目前复杂且庞大的现代化软件系统中简化，让如此多人数协作起来更方便。&lt;/p&gt;
+&lt;hr&gt;
+&lt;p&gt;注：以上的具体技术内容感兴趣建议深入了解，这里表达浅显。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>

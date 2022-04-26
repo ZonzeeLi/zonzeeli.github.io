@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>Pages on Zonzee Li 👨‍💻</title>
+        <link>https://zonzeeli.github.io/page/</link>
+        <description>Recent content in Pages on Zonzee Li 👨‍💻</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Sun, 15 Nov 2020 00:00:00 +0000</lastBuildDate><atom:link href="https://zonzeeli.github.io/page/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>About me</title>
+        <link>https://zonzeeli.github.io/about-me/</link>
+        <pubDate>Sun, 15 Nov 2020 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/about-me/</guid>
+        <description>&lt;p&gt;  一个土生的东北小伙，感受到自己过于渺小落后别人，一直希望着能培养自己的视野与见识，所以梦想着出国留学工作，或者是国内大厂去内卷，在多个城市多个值得学习的地方多经历一番，品尝品尝生活的味道，也随时在自我评价着自身的价值和生活的意义。&lt;/p&gt;
+&lt;p&gt;  个人是非常喜欢穿搭设计、建筑设计和摄影摄像的，喜欢看服饰类、潮牌、奢侈品等的上新和热门，还有很多up类似于小艾大叔、VIC56_CC等这些人分享的Luxury Home视频，或是DAMUFOTOGRAFIA、Gvarusl、oboahy还有大神Linksphotograph这些人的摄影分享。&lt;/p&gt;
+&lt;p&gt;  也因为想开阔视野所以爱好的东西有很多，本人还是个动漫爱好者加果粉，看过很多番，也很喜欢日本这个国家，对于电子产品也很喜欢，感觉这是很直接让人能体验到生活上的智能的工具，其他的还有音乐、车、美食、健身运动&amp;hellip;总之喜欢的东西太多了，同时也都乐在其中，感觉这些东西正是填满自己生活的一部分。&lt;/p&gt;
+&lt;p&gt;  至于为什么选择了作为一名程序员呢&amp;hellip;其实之前学习的是电子信息类，后来才步入计算机，相当于从0开始学习了，包括目前也是，计算机的知识在现代社会快速发展下也跟着更新的很快，上面说到我很喜欢动漫嘛，我感觉编程和画漫画一样，是可以将自己想要的东西用代码和漫画呈现出来，体现自己想法的，所以会称开发、Developer。不过目前包括以后都会一直学习新技术、新框架等等后端开发、Devops的内容，期待着自己以后对互联网方向和行业能否有个人的理解和看法。&lt;/p&gt;
+&lt;p&gt;  本人之前在leetcode上一直有在写题解，等有机会把一些算法和思路整合整合分享到博客来，还有github，但本人的github什么都没分享，只是无脑的clone和star罢了哈哈，另外bilibili、twitter、Youtube、ins也是经常使用的社交娱乐类app了，在这里就先不放出来，有兴趣的可以联系我再互相分享一下。&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://leetcode-cn.com/u/zonzeeli0523/&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://leetcode-cn.com/u/zonzeeli0523/&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;https://github.com/ZonzeeLi&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;https://github.com/ZonzeeLi&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;&lt;a class=&#34;link&#34; href=&#34;mailto:zonzeeli0523@gmail.com&#34; &gt;zonzeeli0523@gmail.com&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;  最后期待着和大家一起共同学习、共同进步 📖 。&lt;/p&gt;
+</description>
+        </item>
+        <item>
+        <title>Archives</title>
+        <link>https://zonzeeli.github.io/archives/</link>
+        <pubDate>Tue, 28 May 2019 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/archives/</guid>
+        <description></description>
+        </item>
+        <item>
+        <title>Search</title>
+        <link>https://zonzeeli.github.io/search/</link>
+        <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/search/</guid>
+        <description></description>
+        </item>
+        
+    </channel>
+</rss>

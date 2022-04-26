@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Go语言内存对齐的概念及代码分析'><title>Go语言——内存对齐</title>
+
+<link rel='canonical' href='https://zonzeeli.github.io/p/memory-alignment/'>
+
+<link rel="stylesheet" href="/scss/style.min.450926226e724574a6b936335ea06111f8aeb253d932c86cb2cc807341cd2889.css"><meta property='og:title' content='Go语言——内存对齐'>
+<meta property='og:description' content='Go语言内存对齐的概念及代码分析'>
+<meta property='og:url' content='https://zonzeeli.github.io/p/memory-alignment/'>
+<meta property='og:site_name' content='Zonzee Li 👨‍💻'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='go' /><meta property='article:published_time' content='2022-03-29T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2022-03-29T00:00:00&#43;00:00'/><meta property='og:image' content='https://zonzeeli.github.io/p/memory-alignment/memoryalignment.jpg' />
+<meta name="twitter:title" content="Go语言——内存对齐">
+<meta name="twitter:description" content="Go语言内存对齐的概念及代码分析"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://zonzeeli.github.io/p/memory-alignment/memoryalignment.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu77a3462afc37200b06a1519079618b2f_1084312_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">💻</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Zonzee Li 👨‍💻</a></h1>
+            <h2 class="site-description">一个耐心学习的小程序员。记录生活，享受生活的Gopher。</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/ZonzeeLi'
+                        target="_blank"
+                        title="GitHub"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about-me/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About me</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/memory-alignment/">
+                <img src="/p/memory-alignment/memoryalignment_hu02570da8dff591db14e92b986bdd1dc3_682341_800x0_resize_q75_box.jpg"
+                        srcset="/p/memory-alignment/memoryalignment_hu02570da8dff591db14e92b986bdd1dc3_682341_800x0_resize_q75_box.jpg 800w, /p/memory-alignment/memoryalignment_hu02570da8dff591db14e92b986bdd1dc3_682341_1600x0_resize_q75_box.jpg 1600w"
+                        width="800" 
+                        height="534" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——内存对齐" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/go/" >
+                Go
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/memory-alignment/">Go语言——内存对齐</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            Go语言内存对齐的概念及代码分析
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Mar 29, 2022</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    3 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="内存对齐">内存对齐</h2>
+<p>  在了解内存对齐这个概念之前，我们首先要知道的是32位系统，一次能最大处理的位数，即取出的数据最多为32位，即4个字节，内存对齐的话就是4字节的内存对齐，如果是64位系统，则同理得出是8字节内存对齐。</p>
+<p>  注：以下内容和代码部分选自其他文章。</p>
+<p>  知道了上述前提后，我们要清楚内存中数据存放的形式是怎么样的？如果以大体图来解释的话，如下：</p>
+<p><img src="/p/memory-alignment/%E5%86%85%E5%AD%98%E5%AD%98%E5%82%A8%E5%BD%A2%E5%BC%8F.png"
+	width="953"
+	height="149"
+	srcset="/p/memory-alignment/%E5%86%85%E5%AD%98%E5%AD%98%E5%82%A8%E5%BD%A2%E5%BC%8F_hu518ff544a7b9338eef1b5e3dd520cbc0_6578_480x0_resize_box_3.png 480w, /p/memory-alignment/%E5%86%85%E5%AD%98%E5%AD%98%E5%82%A8%E5%BD%A2%E5%BC%8F_hu518ff544a7b9338eef1b5e3dd520cbc0_6578_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="639"
+		data-flex-basis="1535px"
+	
+></p>
+<p>  所以针对上述对32位和64位系统的解释，我们可以看出，针对32位系统，每4字节的数据放在一起，每次取也是4字节一起取。</p>
+<h3 id="为什么需要内存对齐">为什么需要内存对齐？</h3>
+<ul>
+<li>平台问题：并不是所有的硬件平台都能访问任意地址上的任意数据。有些CPU可以访问任意地址上的任意数据，而有些CPU只能在特定地址访问数据，因此不同硬件平台具有差异性，这样的代码就不具有移植性，如果在编译时，将分配的内存进行对齐，这就具有平台可以移植性了。</li>
+<li>性能问题：访问未对齐内存需要cpu进行两次访问，对齐后只需要一次。CPU访问内存时并不是逐个字节访问，而是以字长（word size）为单位访问，例如 32位的CPU字长是4字节，64位的是8字节。如果变量的地址没有对齐，可能需要多次访问才能完整读取到变量内容，而对齐后可能就只需要一次内存访问，因此内存对齐可以减少CPU访问内存的次数，加大CPU访问内存的吞吐量。</li>
+</ul>
+<h3 id="内存对齐的概念">内存对齐的概念</h3>
+<p>  所以基于以上原因，理论上计算机可以访问任意地址的变量，但是在访问特定类型通常在特定的内存地址中，数据存放并不是随意存放，从上面的图可以得出，是有规则的顺序，我们能够分析出，内存对齐是<strong>为了能够快速访问内存进行数据的存取，但是会消耗内存空间，用空间换时间的一种内存存储规则</strong>。</p>
+<h2 id="go语言中内存对齐的体现">Go语言中内存对齐的体现</h2>
+<p>  首先看一下下面这段代码：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">s1</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1&#34;</span><span class="p">,</span> <span class="s">&#34;2&#34;</span><span class="p">,</span> <span class="s">&#34;3&#34;</span><span class="p">}</span>
+	<span class="nx">s2</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1&#34;</span><span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">s1</span><span class="p">))</span> <span class="c1">// 24
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">s2</span><span class="p">))</span> <span class="c1">// 24
+</span><span class="c1"></span>
+	<span class="kd">type</span> <span class="nx">t1</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>
+		<span class="nx">b</span> <span class="kt">int64</span>
+		<span class="nx">c</span> <span class="kt">int32</span>
+	<span class="p">}</span>
+	<span class="kd">type</span> <span class="nx">t2</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>
+		<span class="nx">b</span> <span class="kt">int32</span>
+		<span class="nx">c</span> <span class="kt">int64</span>
+	<span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">t1</span><span class="p">{}))</span> <span class="c1">// 24
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">t2</span><span class="p">{}))</span> <span class="c1">// 16
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  是不是对这个结果有疑问呢？为什么<code>s1</code>和<code>s2</code>的数据长度不同，但是打印出的内存长度一样？为什么<code>t1</code>和<code>t2</code>的结构体只是定义的顺序不同，内存长度却不一样？</p>
+<p>  这里要说明一下，go语言通过<code>unsafe.Sizeof(x)</code>打印的变量占用的内存字节数，和底层数据无关，不包含<code>x</code>所指向的内容大小，所以第一个疑问解决了。也同理我们可以通过<code>unsafe.Sizeof()</code>打印出各个类型的内存占用大小。</p>
+<p>  注：这里使用的是64位系统。</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>字节数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bool</td>
+<td>1</td>
+</tr>
+<tr>
+<td>intN, uintN, floatN, complexN</td>
+<td>N/8 个字节 （int32 是 4 个字节）</td>
+</tr>
+<tr>
+<td>int, uint, uintptr</td>
+<td>计算机字长/8 (64位 是 8 个字节)</td>
+</tr>
+<tr>
+<td>*T, map, func, chan</td>
+<td>计算机字长/8 (64位 是 8 个字节)</td>
+</tr>
+<tr>
+<td>string （data、len）</td>
+<td>2 * 计算机字长/8 (64位 是 16 个字节)</td>
+</tr>
+<tr>
+<td>interface (tab、data 或 _type、data)</td>
+<td>2 * 计算机字长/8 (64位 是 16 个字节)</td>
+</tr>
+<tr>
+<td>[]T (array、len、cap)</td>
+<td>3 * 计算机字长/8 (64位 是 24 个字节)</td>
+</tr>
+</tbody>
+</table></div>
+<p>  接下来，我们针对结构体的疑惑来讨论，在文章的开头我们已经介绍过，数据在内存中存放的形式。在如下结构体中：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">t</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">a</span> <span class="kt">bool</span> <span class="c1">// 1个字节
+</span><span class="c1"></span>    <span class="nx">b</span> <span class="kt">int</span>     <span class="c1">// 8个字节
+</span><span class="c1"></span>    <span class="nx">c</span> <span class="kt">string</span> <span class="c1">// 16个字节
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  对于上面的结构，如果是没有进行过内存对齐，则按照存放的顺序，以32位系统的每4个字节取数据的规则，会发现除了<code>a</code>，<code>b</code>和<code>c</code>都不是从头取的，过程如图：</p>
+<p>  这里就有一个问题，对于<code>b</code>和<code>c</code>没有做到从起始位开始取数据，所以会造成之后在再次拼接整理的操作，需要多次内存访问和整理的步骤。而如果经过内存对齐，就会如图：</p>
+<p>  所以我们能发现，内存对齐减少了操作步骤，但是缺浪费了内存空间占用的资源。</p>
+<h2 id="内存对齐的规则">内存对齐的规则</h2>
+<p>  在介绍规则前，go语言<code>unsafe</code>包下还有另外两个函数，<code>unsafe.Alignof()</code>和<code>unsafe.Offsetof()</code>，他们分别是可以获取对齐值和偏移量。这里也介绍一下。</p>
+<h3 id="unsafealignof">unsafe.Alignof()</h3>
+<p>  <code>unsafe.Alignof()</code>接受任何类型的表达式，并返回其对齐方式，在结构体中返回的是对应类型字段所需的对齐方式。</p>
+<ul>
+<li>对于struct结构体，计算每一个<code>unsafe.Alignof(x.f)</code>，<code>unsafe.Alignof(x)</code>是其最大值。</li>
+<li>对于array数组，<code>unsafe.Alignof(x)</code>等于构成数组的元素类型的对齐倍数。</li>
+<li>对于基础类型，<code>unsafe.Alignof(x)</code>返回为<code>min(字长/8，unsafe.Sizeof(x))</code>，即计算机字长与类型占用内存的较小值。</li>
+</ul>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>        <span class="c1">// 8 -- min(8,8) 64位系统
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="kc">true</span><span class="p">))</span>          <span class="c1">// 1 -- min(8,1)
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nb">int32</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>      <span class="c1">// 4 -- min(8,4)
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nb">int64</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span>      <span class="c1">// 8 -- min(8,8)
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nb">complex128</span><span class="p">(</span><span class="mi">1</span><span class="p">)))</span> <span class="c1">// 8 -- min(8,16)
+</span><span class="c1"></span>
+	<span class="kd">type</span> <span class="nx">t1</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>
+		<span class="nx">b</span> <span class="kt">int64</span>
+	<span class="p">}</span>
+	<span class="nx">t</span> <span class="o">:=</span> <span class="nx">t1</span><span class="p">{}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">a</span><span class="p">))</span>  <span class="c1">// 4 
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">b</span><span class="p">))</span>  <span class="c1">// 8
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>    <span class="c1">// 8 -- max(4,8)
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="unsafeoffsetof">unsafe.Offsetof()</h3>
+<p>  知道了每个类型的规则后，就可以使用<code>unsafe.Offsetof()</code>计算结构体内类型的偏移量，官方注释中也说明，<code>which must be of the form structValue.field</code>，所以只有在类型是结构体是才有意义。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">type</span> <span class="nx">t1</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>   <span class="c1">// 4个字节
+</span><span class="c1"></span>		<span class="nx">b</span> <span class="kt">int64</span>   <span class="c1">// 8个字节
+</span><span class="c1"></span>		<span class="nx">c</span> <span class="kt">float32</span> <span class="c1">// 4个字节
+</span><span class="c1"></span>		<span class="nx">d</span> <span class="kt">bool</span>    <span class="c1">// 1个字节
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="nx">t</span> <span class="o">:=</span> <span class="nx">t1</span><span class="p">{}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">a</span><span class="p">))</span> <span class="c1">// 0
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">b</span><span class="p">))</span> <span class="c1">// 8
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">c</span><span class="p">))</span> <span class="c1">// 16
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">d</span><span class="p">))</span> <span class="c1">// 20
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>    <span class="c1">// 8
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>     <span class="c1">// 24
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  可能对于这个偏移量的计算结果有些疑惑，这个<code>unsafe.Offsetof()</code>其实就是在内存对齐之后计算出来的偏移量，即计算特定的地址了，所以这一步需要先看规则。</p>
+<h3 id="内存对齐规则">内存对齐规则</h3>
+<ul>
+<li>成员对齐规则：针对一个基础类型变量，如果<code>unsafe.AlignOf()</code>返回的值是<code>m</code>，那么该变量的地址需要被<code>m</code>整除（如果当前地址不能整除，填充空白字节，直至可以整除）。</li>
+<li>整体对齐规则：针对一个结构体，如果<code>unsafe.AlignOf()</code>返回值是<code>m</code>，需要保证该结构体整体内存占用是<code>m</code>的整数倍，如果当前不是整数倍，需要在后面填充空白字节。</li>
+</ul>
+<p>  针对该规则，我们再把上述的结构体和<code>unsafe.Offsetof()</code>拿出来分析一下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">type</span> <span class="nx">t1</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>   <span class="c1">// 4个字节
+</span><span class="c1"></span>		<span class="nx">b</span> <span class="kt">int64</span>   <span class="c1">// 8个字节
+</span><span class="c1"></span>		<span class="nx">c</span> <span class="kt">float32</span> <span class="c1">// 4个字节
+</span><span class="c1"></span>		<span class="nx">d</span> <span class="kt">bool</span>    <span class="c1">// 1个字节
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="nx">t</span> <span class="o">:=</span> <span class="nx">t1</span><span class="p">{}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">a</span><span class="p">))</span> <span class="c1">// 0
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">b</span><span class="p">))</span> <span class="c1">// 8
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">c</span><span class="p">))</span> <span class="c1">// 16
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">d</span><span class="p">))</span> <span class="c1">// 20
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>    <span class="c1">// 8
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>     <span class="c1">// 24
+</span><span class="c1"></span>	<span class="c1">// 假设从地址0开始
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(int32(1)) = 4，unsafe.Alignof(int32(1)) = 4，地址0开始，可以被4整除
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(int64(1)) = 8，unsafe.Alignof(int64(1)) = 8，地址需要从8开始，才可以被8整除，[4,8]的位置用0来补充
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(float32(1)) = 4，unsafe.Alignof(float32(1)) = 4，地址需要从16开始，可以被4整除，[8,16]的位置被t.b占满
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(true) = 1, unsafe.Alignof(true) = 1, 地址从20开始即可，[16,20]的位置被c沾满。
+</span><span class="c1"></span>	<span class="c1">// 由于结构体也需要对齐，要被8整除，所以要补0到24。
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="/p/memory-alignment/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90.png"
+	width="1245"
+	height="484"
+	srcset="/p/memory-alignment/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90_hu3f36a1c570ec2b1c16972b281c5088f4_40718_480x0_resize_box_3.png 480w, /p/memory-alignment/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90_hu3f36a1c570ec2b1c16972b281c5088f4_40718_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="257"
+		data-flex-basis="617px"
+	
+></p>
+<p>  有一点需要注意，就是如果结构体内部嵌入了空结构体，那么当空结构体位于结构体的前面和中间位置，并不会占用内存，如果是末尾的话，需要内存对齐，占用的空间和前一个变量保持一致。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">C</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="kd">struct</span><span class="p">{}</span>
+	<span class="nx">b</span> <span class="kt">int64</span>
+	<span class="nx">c</span> <span class="kt">int64</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">D</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="kt">int64</span>
+	<span class="nx">b</span> <span class="kd">struct</span><span class="p">{}</span>
+	<span class="nx">c</span> <span class="kt">int64</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">E</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="kt">int64</span>
+	<span class="nx">b</span> <span class="kt">int64</span>
+	<span class="nx">c</span> <span class="kd">struct</span><span class="p">{}</span>
+<span class="p">}</span>
+
+<span class="kd">type</span> <span class="nx">F</span> <span class="kd">struct</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="kt">int32</span>
+	<span class="nx">b</span> <span class="kt">int32</span>
+	<span class="nx">c</span> <span class="kd">struct</span><span class="p">{}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">C</span><span class="p">{}))</span> <span class="c1">// 16
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">D</span><span class="p">{}))</span> <span class="c1">// 16
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">E</span><span class="p">{}))</span> <span class="c1">// 24
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">F</span><span class="p">{}))</span> <span class="c1">// 12
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<p>  OK！以上就是内存对齐的介绍了，从上面的介绍可以看出，在开发过程中，我们可以调整结构体内变量的位置来优化内存占用。</p>
+<p>  Life is fantastic !</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/go/">go</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    
+
+<aside class="related-contents--wrapper">
+    <h2 class="section-title">Related contents</h2>
+    <div class="related-contents">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/map/">
+        
+        
+            <div class="article-image">
+                <img src="/p/map/gomap.c14fa8e9b6a98316f81135a702615a97_hueb06b1d9a0d79dfdcc90f95f1ba3b9ea_886458_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——Map的底层介绍及扩缩容机制"
+                        data-key="map" 
+                        data-hash="md5-wU&#43;o6bapgxb4ETWnAmFalw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——Map的底层介绍及扩缩容机制</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/defer/">
+        
+        
+            <div class="article-image">
+                <img src="/p/defer/godefer.ccf184477fdc8cc6059d4d2ec505e01e_hu7e4671ba8c4acd05ae2c2aa9b1ac6fe3_177012_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——延迟函数defer的使用"
+                        data-key="defer" 
+                        data-hash="md5-zPGER3/cjMYFnU0uxQXgHg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——延迟函数defer的使用</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/slice/">
+        
+        
+            <div class="article-image">
+                <img src="/p/slice/goslice.3df9ec6a4a7200a05eedc5bd83b9af7a_hu1b4159d9ef01abf89b1c5b948d41a0fb_1054267_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——切片(Slice)的坑"
+                        data-key="slice" 
+                        data-hash="md5-PfnsakpyAKBe7cW9g7mveg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——切片(Slice)的坑</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 Zonzee Li 👨‍💻
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.11.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#内存对齐">内存对齐</a>
+      <ol>
+        <li><a href="#为什么需要内存对齐">为什么需要内存对齐？</a></li>
+        <li><a href="#内存对齐的概念">内存对齐的概念</a></li>
+      </ol>
+    </li>
+    <li><a href="#go语言中内存对齐的体现">Go语言中内存对齐的体现</a></li>
+    <li><a href="#内存对齐的规则">内存对齐的规则</a>
+      <ol>
+        <li><a href="#unsafealignof">unsafe.Alignof()</a></li>
+        <li><a href="#unsafeoffsetof">unsafe.Offsetof()</a></li>
+        <li><a href="#内存对齐规则">内存对齐规则</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

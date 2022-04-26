@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='介绍二分查找的原理，并且举例分析如何使用二分查找算法。'><title>数据结构与算法——二分查找</title>
+
+<link rel='canonical' href='https://zonzeeli.github.io/p/binary-search/'>
+
+<link rel="stylesheet" href="/scss/style.min.450926226e724574a6b936335ea06111f8aeb253d932c86cb2cc807341cd2889.css"><meta property='og:title' content='数据结构与算法——二分查找'>
+<meta property='og:description' content='介绍二分查找的原理，并且举例分析如何使用二分查找算法。'>
+<meta property='og:url' content='https://zonzeeli.github.io/p/binary-search/'>
+<meta property='og:site_name' content='Zonzee Li 👨‍💻'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='算法' /><meta property='article:tag' content='Go' /><meta property='article:published_time' content='2021-08-02T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2021-08-02T00:00:00&#43;00:00'/><meta property='og:image' content='https://zonzeeli.github.io/p/binary-search/bsbgi.png' />
+<meta name="twitter:title" content="数据结构与算法——二分查找">
+<meta name="twitter:description" content="介绍二分查找的原理，并且举例分析如何使用二分查找算法。"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://zonzeeli.github.io/p/binary-search/bsbgi.png' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu77a3462afc37200b06a1519079618b2f_1084312_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">💻</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Zonzee Li 👨‍💻</a></h1>
+            <h2 class="site-description">一个耐心学习的小程序员。记录生活，享受生活的Gopher。</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/ZonzeeLi'
+                        target="_blank"
+                        title="GitHub"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about-me/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About me</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/binary-search/">
+                <img src="/p/binary-search/bsbgi_hu99e8ca8a10a73e12803b3da53a0f1e24_400965_800x0_resize_box_3.png"
+                        srcset="/p/binary-search/bsbgi_hu99e8ca8a10a73e12803b3da53a0f1e24_400965_800x0_resize_box_3.png 800w, /p/binary-search/bsbgi_hu99e8ca8a10a73e12803b3da53a0f1e24_400965_1600x0_resize_box_3.png 1600w"
+                        width="800" 
+                        height="532" 
+                        loading="lazy"
+                        alt="Featured image of post 数据结构与算法——二分查找" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84%E4%B8%8E%E7%AE%97%E6%B3%95/" >
+                数据结构与算法
+            </a>
+        
+            <a href="/categories/leetcode/" >
+                LeetCode
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/binary-search/">数据结构与算法——二分查找</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            介绍二分查找的原理，并且举例分析如何使用二分查找算法。
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Aug 02, 2021</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    5 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="二分查找算法">二分查找算法</h2>
+<p>  二分查找算法又称为折半查找(Binary Search)，是查找算法中简单、快速、高效的查找算法。使用要求是有序排列，且是顺序存储结构。</p>
+<h2 id="基本原理">基本原理</h2>
+<p>  我们用文字梳理一下二分查找的原理，假设给定一个无重复值的递增数组[ ]int，变量名为<code>nums</code> ：</p>
+<ol>
+<li>
+<p>如果序列本身为空，不会进入二分查找算法。</p>
+</li>
+<li>
+<p>如果序列不为空，从首尾开始进行二分，分为<code>left</code>、<code>right</code>、<code>mid</code>，<code>mid</code>就是首尾折半，判断条件为<code>left &lt;= right</code>。</p>
+</li>
+<li>
+<p>判断target和mid的值大小：</p>
+<ul>
+<li>如果此时<code>nums[mid] == target</code>，那么就找到了返回值，可以直接返回。</li>
+<li>如果此时<code>nums[mid] &gt; target</code>，那么说明返回值应该在当前索引<code>mid</code>的左侧，此时<code>end = mid - 1</code>，查找范围缩短。</li>
+<li>如果此时<code>nums[mid] &lt; target</code>，那么说明返回值应该在当前索引<code>mid</code>的右侧，此时<code>start = mid + 1</code>，查找范围缩短。</li>
+</ul>
+</li>
+</ol>
+<p>如果以代码来呈现的话就是这样。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">nums</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">}</span>
+<span class="nx">target</span> <span class="o">:=</span> <span class="mi">5</span>
+<span class="nx">left</span><span class="p">,</span> <span class="nx">right</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+<span class="kd">var</span> <span class="nx">output</span> <span class="kt">int</span>
+<span class="k">for</span> <span class="nx">left</span> <span class="o">&lt;=</span> <span class="nx">right</span> <span class="p">{</span>
+	<span class="nx">mid</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">left</span> <span class="o">+</span> <span class="nx">right</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+	<span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="o">==</span> <span class="nx">target</span> <span class="p">{</span>
+		<span class="nx">output</span> <span class="p">=</span> <span class="nx">mid</span>
+		<span class="k">break</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&gt;</span> <span class="nx">target</span> <span class="p">{</span>
+		<span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">-</span> <span class="mi">1</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">target</span> <span class="p">{</span>
+		<span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">+</span> <span class="mi">1</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  上面介绍的就是最基本的二分查找模板，不过有时候也有很多的其他的情况，二分并没有什么具体的模板写法，不要一味的去套模板，很容易出现超时、找错索引的情况，一定要理解好了去使用。</p>
+<p>  但是这里面可能有人会有疑惑，为什么我看到其他人的写法在判断条件的for循环里是<code>left &lt; right</code>？为什么有人的写法是<code>left = mid，right = mid - 1</code>或是<code>left = mid + 1，right = mid</code>？这些情况我们接着讨论。</p>
+<h2 id="其他情况">其他情况</h2>
+<p>  我们修改一下原先的问题，带有重复数字的有序数组[]int，假设<code>nums</code>为<code>{1,2,3,3,3,4}</code>，如果我们按照上面的代码的话其实能找到3的位置，直接就能返回到第一个3的索引2为结果，但是如果我们想要找到最后一个3出现的位置该怎么办呢？这里面就存在了一个边界范围的情况讨论。这里我先以这道题为例，代码如下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nx">nums</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">}</span>
+<span class="nx">target</span> <span class="o">:=</span> <span class="mi">3</span>
+<span class="nx">left</span><span class="p">,</span> <span class="nx">right</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+<span class="k">for</span> <span class="nx">left</span> <span class="p">&lt;</span> <span class="nx">right</span> <span class="p">{</span>
+	<span class="nx">mid</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">left</span> <span class="o">+</span> <span class="nx">right</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+	<span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&gt;</span> <span class="nx">target</span> <span class="p">{</span>
+		<span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">-</span> <span class="mi">1</span>
+	<span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+		<span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span>
+	<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  这么一看是不是区别很大？但是却又和我们看到其他人写的二分法很像的样子。这样写比较好看，但同样也存在着问题，来分析和解释一下这段代码。</p>
+<ul>
+<li>首先注意到了为什么这里面是<code>left &lt; right</code>而不是<code>left &lt;= right</code>，因为这道例子我们想要找的是右边界，所以搜索范围希望是一个从左到右，<code>(left,right]</code>，左开右闭的区间，这个搜索区间是和我们定义的<code>right</code>有关，如果你的<code>right</code>定义成了<code>len-1</code>，那就说明我们的搜索区间是<code>[left,right]</code>，如果是<code>len</code>就是<code>[left,right)</code>，因为<code>nums(len)</code>会越界。而这里的<code>left &lt; right</code>在最后<code>left == right</code>时，可以让程序从<code>[left,right)</code>中正常终止，否则会陷入死循环。不过这个其实和下面<code>left</code>与<code>right</code>的值更新一起决定的。</li>
+<li>接下来的<code>mid := (left + right + 1) &gt;&gt; 1</code>，这里的加1，是为了防止死锁，比如这道例子，假设我们的<code>mid := (left + right) &gt;&gt; 1</code>，在计算到<code>left = 4</code>，<code>right = 5</code>的时候，这是<code>mid = 4</code>，继续进入循环，进入循环后还是依然<code>left = 4</code>，<code>right = 5</code>，这样子就死锁了。</li>
+<li>最后是判断条件和更新值的不一样，这道例子是找右边界的target，有这三种情况：
+<ol>
+<li>在<code>nums[mid] &gt; target</code>的情况，说明mid肯定不是我们要找的索引，目标值应该在mid的左边，right范围可以直接减1，即<code>right = mid - 1</code>；</li>
+<li>在<code>nums[mid] = target</code>的情况，这时候没办法说明mid是最右边的，但可以肯定的是，至少是在mid靠右的部分，所以此时该更新<code>left = mid</code>，而不是<code>left = mid + 1</code>我们保留当前的mid还在我们接下来的搜索范围内，这样子避免万一当前mid就是右边界从而导致找不到值；</li>
+<li>在<code>nums[mid] &lt; target</code>的情况，说明mid肯定不是我们要找的索引，目标值应该在mid的右边，有人会疑惑，那不该是<code>left = mid + 1</code>吗？不这么写是因为有一种情况，<code>[2,2]</code>，如果我们想找<code>target = 3</code>，因为所有的值都比目标值小，我们返回的left就会越界超出索引，这种情况是在此写法下会发生的问题。</li>
+</ol>
+</li>
+</ul>
+<p>  另外大家思考一下，如果找的目标值不存在<code>nums</code>里我们返回的是什么呢？比如上面的代码中，如果我们的目标值是<code>0</code>的话，返回的是<code>0</code>，如果目标值是<code>5</code>的话，返回的是<code>5</code>。这里其实是<strong>返回小于目标值的最右边界索引</strong>。</p>
+<p>  到这可能很多人也懵了，那这么多情况该怎么处理好呢，感觉写起来很困难。</p>
+<h2 id="思路">思路</h2>
+<p>  最开始我也在这地方卡了很久，可能是会做了一道题，再出另一道题就不会做了，一道题的二分法写法肯定不只是一种，这个是根据<code>left</code>和<code>right</code>的定义，还有判断规则来决定的，这个需要多总结。我个人认为二分的思路需要如下，以一道题为例：</p>
+<h3 id="leetcode-35-搜索插入位置">Leetcode 35. 搜索插入位置</h3>
+<p><em>给定一个排序数组和一个目标值，在数组中找到目标值，并返回其索引。如果目标值不存在于数组中，返回它将会被按顺序插入的位置。请必须使用时间复杂度为$O(\log n)$的算法。</em></p>
+<ul>
+<li>首先我们先理清题意，这道题转换一下就是要找到目标值，返回其索引，如果不存在则找到大于目标值的最左边界，如果都小于目标值的话，那就返回<code>len(nums)</code>。</li>
+<li>理清楚了这道题的是要找左边界，那么我们就先来思考判断条件，如果我们的<code>nums[i] &gt; target</code>的话，那么我们的target可能是在<code>[0，i]</code>之间，这里之所以<code>i</code>也包含是因为，如果不存在目标值的话，<code>i</code>可能是大于目标值的最左边界，所以要保留该索引，或者这么思考，如果我们的<code>nums[i] &lt; target</code>，那么<code>i</code>下的值肯定不是我们要找的值，搜索空间应该在<code>i</code>之后，所以应该是<code>[i+1, ]</code>。</li>
+<li>在理清楚判断规则后，接下来就是<code>left</code>和<code>right</code>的定义了，这道题<code>right</code>定义成<code>len(nums)-1</code>，这个就像上面解析所说，是根据自己写法的定义，如果说是循环条件<code>left &lt;= right</code>的话，那么我们的<code>left</code>和<code>right</code>都不能更新成<code>mid</code>，也就是<code>left = mid + 1</code>和<code>right = mid - 1</code>这种形式，因为防止进入死锁，没有办法终止，反之，如果<code>left &lt; right</code>这样的条件，最后的结果就是<code>left == right</code>，可以终止循环。</li>
+</ul>
+<p>  按照上面的思路我们写出来该题的代码:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">searchInsert</span><span class="p">(</span><span class="nx">nums</span> <span class="p">[]</span><span class="kt">int</span><span class="p">,</span> <span class="nx">target</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nx">target</span> <span class="p">&gt;</span> <span class="nx">nums</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">left</span><span class="p">,</span> <span class="nx">right</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="nx">left</span> <span class="p">&lt;</span> <span class="nx">right</span> <span class="p">{</span>
+        <span class="nx">mid</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">left</span> <span class="o">+</span> <span class="nx">right</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">target</span> <span class="p">{</span>
+            <span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+            <span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span> <span class="c1">//这里的条件left &lt; right可以防止死循环
+</span><span class="c1"></span>        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">left</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  那如果循环条件是<code>left &lt;= right</code>的代码应该是这样:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">searchInsert</span><span class="p">(</span><span class="nx">nums</span> <span class="p">[]</span><span class="kt">int</span><span class="p">,</span> <span class="nx">target</span> <span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nx">target</span> <span class="p">&gt;</span> <span class="nx">nums</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nx">left</span><span class="p">,</span> <span class="nx">right</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="nx">left</span> <span class="o">&lt;=</span> <span class="nx">right</span> <span class="p">{</span>
+        <span class="nx">mid</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">left</span> <span class="o">+</span> <span class="nx">right</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span>
+        <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">target</span> <span class="p">{</span>
+            <span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+            <span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">left</span> 
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  到这里，是否对二分法熟悉了很多，那么再来看一道例题:</p>
+<h3 id="leetcode-34-在排序数组中查找元素的第一个和最后一个位置">Leetcode 34. 在排序数组中查找元素的第一个和最后一个位置</h3>
+<p>  注：该题与 <strong>剑指Offer 53 - I. 在排序数组中查找数字Ⅰ</strong> 题干一样，只是返回要求不同。</p>
+<p><em>给定一个按照升序排列的整数数组 nums，和一个目标值 target。找出给定目标值在数组中的开始位置和结束位置。如果数组中不存在目标值 target，返回[-1, -1]。 进阶：你可以设计并实现时间复杂度为$O(\log n)$的算法解决此问题吗？</em></p>
+<ul>
+<li>首先看这道题我们就清楚了是要找到目标值的最左和最右边界题，而且题干给了题意是$O(\log n)$的算法，这就说明要使用二分法来做了，这个要记住，不少题会这么说，这也是二分法的时间复杂度，很有标志性。</li>
+<li>然后我们首先要知道，如果数组的长度是0，或者目标值大于数组最大的值，或者小于数组最小的值，那么就可以直接返回要求的<code>[-1. -1]</code>。</li>
+<li>接下来就是两步二分法，分别找左右边界，第一个二分法找左边界，我们定义<code>left</code>和<code>right</code>分别是<code>0</code>和<code>len(nums)-1</code>，循环条件为<code>left &lt; right</code>，找左边界的化，如果是<code>nums[mid] &lt; target</code>，这种情况说明当前<code>mid</code>下的值肯定不是我们所要找的值，搜索范围应该<code>[mid + 1, ]</code>，所以<code>left = mid + 1</code>，或者思考，如果是<code>nums[mid] &gt;= target</code>，在等于的情况下好说，可能是最左边界，但是要继续向左找，所以保留<code>mid</code>，在大于的情况下，一是因为循环条件的设定，另一个是因为为了找左边界，如果没有目标值的话，会返回大于目标值的最左边界，令<code>right = mid</code>。最后我们返回，<code>start = left</code>。</li>
+<li>那么接下来就是找右边界了，定义和循环条件还是不变，如果<code>nums[mid] &gt; target</code>，这说明了当前值过大了，那么我们要找的范围就是从<code>[0, mid - 1]</code>，所以此时缩小范围，令<code>right = mid - 1</code>，反之，如果是<code>nums[mid] &lt;= target</code>，在等于的情况下很好理解，该值可能是最右边界，所以保留继续向右搜索，如果是小于的情况下，考虑到如果没有目标值，则返回小于目标值的最右边界，所以此时令<code>left = mid</code>。最后我们返回<code>end = left</code>。</li>
+<li>最后就是如果真的没有目标值，那就是左边界的索引大于右边界的索引，即<code>start &gt; left</code>。</li>
+</ul>
+<p>  按照上面的思路我们写出来该题的代码:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span><span class="lnt">26
+</span><span class="lnt">27
+</span><span class="lnt">28
+</span><span class="lnt">29
+</span><span class="lnt">30
+</span><span class="lnt">31
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">searchRange</span><span class="p">(</span><span class="nx">nums</span> <span class="p">[]</span><span class="kt">int</span><span class="p">,</span> <span class="nx">target</span> <span class="kt">int</span><span class="p">)</span> <span class="p">[]</span><span class="kt">int</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="nx">target</span> <span class="p">&gt;</span> <span class="nx">nums</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">||</span> <span class="nx">target</span> <span class="p">&lt;</span> <span class="nx">nums</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nx">start</span><span class="p">,</span> <span class="nx">end</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="nx">left</span><span class="p">,</span> <span class="nx">right</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="nx">left</span> <span class="p">&lt;</span> <span class="nx">right</span> <span class="p">{</span>
+        <span class="nx">mid</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">left</span><span class="o">+</span><span class="nx">right</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">target</span> <span class="p">{</span>
+            <span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+            <span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nx">start</span> <span class="p">=</span> <span class="nx">left</span>
+
+    <span class="nx">left</span><span class="p">,</span> <span class="nx">right</span> <span class="p">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="nx">left</span> <span class="p">&lt;</span> <span class="nx">right</span> <span class="p">{</span>
+        <span class="nx">mid</span> <span class="o">:=</span> <span class="p">(</span><span class="nx">left</span><span class="o">+</span><span class="nx">right</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&gt;</span> <span class="nx">target</span> <span class="p">{</span>
+            <span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+            <span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="nx">end</span> <span class="p">=</span> <span class="nx">left</span>
+    <span class="k">if</span> <span class="nx">start</span> <span class="p">&gt;</span> <span class="nx">end</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="p">[]</span><span class="kt">int</span><span class="p">{</span><span class="nx">start</span><span class="p">,</span> <span class="nx">end</span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  如果能理解到这，或者这两道题可以做出来了那至少正常的二分法是了解差不多了，接下来再举两道同类型的，我认为比较有代表性的二分法题：</p>
+<h3 id="leetcode-153-寻找旋转排序数组中的最小值">Leetcode 153. 寻找旋转排序数组中的最小值</h3>
+<p><em>已知一个长度为 n 的数组，预先按照升序排列，经由 1 到 n 次 旋转 后，得到输入数组。例如，原数组 <code>nums = [0,1,2,4,5,6,7]</code> 在变化后可能得到：</em>
+<em>若旋转 4 次，则可以得到<code>[4,5,6,7,0,1,2]</code></em>
+<em>若旋转 7 次，则可以得到<code>[0,1,2,4,5,6,7]</code></em>
+<em>注意，数组<code>[a[0], a[1], a[2], ..., a[n-1]]</code>旋转一次 的结果为数组<code>[a[n-1], a[0], a[1], a[2], ..., a[n-2]]</code>。</em></p>
+<p><em>给你一个元素值 <strong>互不相同</strong> 的数组 <code>nums</code> ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 <strong>最小元素</strong> 。</em></p>
+<ul>
+<li>首先我们要思考的问题是，这道题为什么可以用二分法？二分法的要求不是有序吗？确实是这样我们来分析一下这道题，这道题相当于是两段有序的数组，且第二段的末尾接着第一段的首。我们可以思考一下情况：
+<ol>
+<li>如果是没有进行旋转，那么可以正常使用二分，此时<code>nums[mid] &gt; nums[left]</code>，且<code>nums[mid] &lt; nums[right]</code>，即正常的顺序，这样最小值一定在<code>mid</code>的左边范围</li>
+<li>如果是<code>nums[mid] &lt; nums[left]</code>，且<code>nums[mid] &lt; nums[right]</code>，即中间值小于两边值，这说明肯定旋转过，最小值一定在包含<code>mid</code>的左边范围。</li>
+<li>如果是<code>nums[mid] &gt; nums[left]</code>，且<code>nums[mid] &gt; nums[right]</code>，即中间值大于两边值，这也说明肯定旋转过，最小值一定在<code>mid</code>的右边范围。</li>
+<li>最后一种情况是<code>nums[mid] &lt; nums[left]</code>，且<code>nums[mid] &gt; nums[right]</code>，这种情况不会发生。</li>
+</ol>
+</li>
+<li>经过上面的分析我们可以看出来，通过比较<code>nums[mid]</code>与<code>nums[right]</code>的大小就能找出来接下来的搜索范围。所以这道题二分法是可行的。</li>
+</ul>
+<p>  按照上面的思路我们写出来该题的代码:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">findMin</span><span class="p">(</span><span class="nx">nums</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">left</span><span class="p">,</span> <span class="nx">right</span><span class="p">,</span> <span class="nx">mid</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="nx">left</span> <span class="p">&lt;</span> <span class="nx">right</span> <span class="p">{</span>
+        <span class="nx">mid</span> <span class="p">=</span> <span class="p">(</span><span class="nx">left</span> <span class="o">+</span> <span class="nx">right</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&gt;</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">right</span><span class="p">]</span> <span class="p">{</span>
+            <span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">}</span><span class="k">else</span> <span class="p">{</span>
+            <span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">left</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h3 id="leetcode-154-寻找旋转排序数组中的最小值-ii">Leetcode 154. 寻找旋转排序数组中的最小值 II</h3>
+<p><em>已知一个长度为 n 的数组，预先按照升序排列，经由 1 到 n 次 旋转 后，得到输入数组。例如，原数组 <code>nums = [0,1,4,4,5,6,7]</code> 在变化后可能得到：</em>
+<em>若旋转 4 次，则可以得到 <code>[4,5,6,7,0,1,4]</code></em>
+<em>若旋转 7 次，则可以得到 <code>[0,1,4,4,5,6,7]</code></em>
+<em>注意，数组 <code>[a[0], a[1], a[2], ..., a[n-1]]</code> 旋转一次 的结果为数组 <code>[a[n-1], a[0], a[1], a[2], ..., a[n-2]]</code> 。</em></p>
+<p><em>给你一个可能存在 <strong>重复</strong> 元素值的数组 <code>nums</code> ，它原来是一个升序排列的数组，并按上述情形进行了多次旋转。请你找出并返回数组中的 <strong>最小元素</strong> 。</em></p>
+<ul>
+<li>理清了上面的那道题我们就对这道题的思路很清晰了，比较<code>nums[mid]</code>与<code>nums[right]</code>的值就可以，但是这道题为什么会成为困难题？因为这里包含了重复元素，如果是重复元素的话，我们上面的解法就会出现错误。但是真的不可以那么做了吗？</li>
+<li>我们可以举一个非常简单的例子看一下区别，上面的例子，是因为我们可以通过比较<code>nums[mid]</code>与<code>nums[right]</code>的值，可以判断该往哪个方向收缩搜索范围，而这道题，如果是<code>[1,0,1,1]</code>和<code>[1,1,0,1]</code>，唯独在<code>nums[mid] == nums[right]</code>的情况下，我们没有办法判断该往哪个方向收缩。所以这道题需要做的就是在相等的情况下如何去处理。这里的处理方式是在<code>nums[mid] == nums[right]</code>的情况下，令<code>right = right - 1</code>。正常来理解就是直到把这个重复的数字删去让<code>nums[mid]</code>与<code>nums[right]</code>的判断不受到影响就可以。</li>
+<li>那么条件是否允许呢？有两种情况，<code>nums[right]</code>是我们要找的最小值，且如果不是唯一的话，<code>nums[mid]</code>会依然在我们的搜索范围内，如果是唯一的话，那么此时<code>nums[mid] == nums[right]</code>，可以推出<code>mid == right</code>，但是因为是向下取整的，<code>mid</code>可能等于<code>left</code>不会等于<code>right</code>。</li>
+</ul>
+<p>  按照上面的思路我们写出来该题的代码:</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">findMin</span><span class="p">(</span><span class="nx">nums</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">left</span><span class="p">,</span> <span class="nx">mid</span><span class="p">,</span> <span class="nx">right</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="nx">nums</span><span class="p">)</span><span class="o">-</span><span class="mi">1</span>
+    <span class="k">for</span> <span class="nx">left</span> <span class="p">&lt;</span> <span class="nx">right</span> <span class="p">{</span>
+        <span class="nx">mid</span> <span class="p">=</span> <span class="p">(</span><span class="nx">left</span> <span class="o">+</span> <span class="nx">right</span><span class="p">)</span> <span class="o">&gt;&gt;</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&gt;</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">right</span><span class="p">]</span> <span class="p">{</span>
+            <span class="nx">left</span> <span class="p">=</span> <span class="nx">mid</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="p">&lt;</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">right</span><span class="p">]</span> <span class="p">{</span>
+            <span class="nx">right</span> <span class="p">=</span> <span class="nx">mid</span>
+        <span class="p">}</span><span class="k">else</span> <span class="k">if</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">mid</span><span class="p">]</span> <span class="o">==</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">right</span><span class="p">]</span> <span class="p">{</span>
+            <span class="nx">right</span> <span class="o">--</span> 
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nx">nums</span><span class="p">[</span><span class="nx">left</span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><hr>
+<p>  二分算法的解析和例题题解就到这，如果这几道题能理解清楚的话，二分法基本没啥问题，不过还是要多加练习，刷刷LeetCode上面的题。</p>
+<p>  这篇文章的结尾附上本人LeetCode主页： <a class="link" href="https://leetcode-cn.com/u/zonzeeli0523/"  target="_blank" rel="noopener"
+    >https://leetcode-cn.com/u/zonzeeli0523/</a></p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/%E7%AE%97%E6%B3%95/">算法</a>
+        
+            <a href="/tags/go/">go</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    
+
+<aside class="related-contents--wrapper">
+    <h2 class="section-title">Related contents</h2>
+    <div class="related-contents">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/heap/">
+        
+        
+            <div class="article-image">
+                <img src="/p/heap/heapbgi.c7eb47b162f8232662361b8c18a3d3e5_huc5d87bcdba7a5bdb2d2f31e795ea4b08_530172_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 数据结构与算法——堆结构"
+                        data-key="heap" 
+                        data-hash="md5-x&#43;tHsWL4IyZiNhuMGKPT5Q==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">数据结构与算法——堆结构</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/time-complexity/">
+        
+        
+            <div class="article-image">
+                <img src="/p/time-complexity/backgroud.3507d3f4eb5fe638027451ed67e31d50_hu657e1541751ab3fe88efa1500cb20dad_556714_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post 数据结构与算法——时间复杂度"
+                        data-key="time-complexity" 
+                        data-hash="md5-NQfT9Otf5jgCdFHtZ&#43;MdUA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">数据结构与算法——时间复杂度</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 Zonzee Li 👨‍💻
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.11.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#二分查找算法">二分查找算法</a></li>
+    <li><a href="#基本原理">基本原理</a></li>
+    <li><a href="#其他情况">其他情况</a></li>
+    <li><a href="#思路">思路</a>
+      <ol>
+        <li><a href="#leetcode-35-搜索插入位置">Leetcode 35. 搜索插入位置</a></li>
+        <li><a href="#leetcode-34-在排序数组中查找元素的第一个和最后一个位置">Leetcode 34. 在排序数组中查找元素的第一个和最后一个位置</a></li>
+        <li><a href="#leetcode-153-寻找旋转排序数组中的最小值">Leetcode 153. 寻找旋转排序数组中的最小值</a></li>
+        <li><a href="#leetcode-154-寻找旋转排序数组中的最小值-ii">Leetcode 154. 寻找旋转排序数组中的最小值 II</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

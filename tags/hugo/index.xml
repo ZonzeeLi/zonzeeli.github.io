@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+    <channel>
+        <title>hugo on Zonzee Li 👨‍💻</title>
+        <link>https://zonzeeli.github.io/tags/hugo/</link>
+        <description>Recent content in hugo on Zonzee Li 👨‍💻</description>
+        <generator>Hugo -- gohugo.io</generator>
+        <language>en-us</language>
+        <lastBuildDate>Sat, 27 Mar 2021 00:00:00 +0000</lastBuildDate><atom:link href="https://zonzeeli.github.io/tags/hugo/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>搭建个人博客网站——hugo</title>
+        <link>https://zonzeeli.github.io/p/make-blog/</link>
+        <pubDate>Sat, 27 Mar 2021 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/p/make-blog/</guid>
+        <description>&lt;img src="https://zonzeeli.github.io/p/make-blog/hugo%E6%90%AD%E5%BB%BA%E8%83%8C%E6%99%AF.png" alt="Featured image of post 搭建个人博客网站——hugo" /&gt;&lt;h2 id=&#34;搭建博客流程&#34;&gt;搭建博客流程&lt;/h2&gt;
+&lt;p&gt;  首先如果是正常的搭建博客，是需要写一个博客的后端和前端界面的，然后需要代理服务器或者云服务器去进行部署，再去购买一个域名作为你网站的标识，这样子就是动态的，其实就是程序在跑，这种并不太适合非程序员的小伙伴来做，而且后端部分的代码的复杂程度还要根据你的功能需求来决定，感兴趣的人可以尝试尝试，这一套流程搞定了整个后端开发也就熟悉不少了。&lt;/p&gt;
+&lt;h2 id=&#34;hugo框架&#34;&gt;hugo框架&lt;/h2&gt;
+&lt;p&gt;  hugo是一个基于go语言开发的个人博客框架，相对于之前和热门的hexo来说更简单操作，也同样是使用markdown来个编辑文章内容，这里将介绍一下如何使用hugo来搭建个人的博客网站。&lt;/p&gt;
+&lt;h2 id=&#34;本地预览&#34;&gt;本地预览&lt;/h2&gt;
+&lt;h3 id=&#34;一安装hugo&#34;&gt;一、安装hugo&lt;/h3&gt;
+&lt;p&gt;  如果你是mac系统的话，mac系统直接使用&lt;code&gt;brew&lt;/code&gt;来安装就可以了。如果是windows，可以 &lt;a class=&#34;link&#34; href=&#34;https://github.com/gohugoio/hugo/releases&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;点击此处&lt;/a&gt; 去github直接下载，可以选择适合你系统的版本进行下载，下载下来是一个指令，windows记得要添加环境变量。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-zsh&#34; data-lang=&#34;zsh&#34;&gt;% brew install hugo
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/make-blog/%E5%AE%89%E8%A3%85.png&#34;
+	width=&#34;1136&#34;
+	height=&#34;282&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/make-blog/%E5%AE%89%E8%A3%85_hudd83e1bd9ba6e9f21e523b953e95bd7f_222049_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/make-blog/%E5%AE%89%E8%A3%85_hudd83e1bd9ba6e9f21e523b953e95bd7f_222049_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;402&#34;
+		data-flex-basis=&#34;966px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  然后通过&lt;code&gt;hugo version&lt;/code&gt;来查看是否安装成功和你的hugo版本。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-zsh&#34; data-lang=&#34;zsh&#34;&gt;% hugo version
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/make-blog/hugoversion.png&#34;
+	width=&#34;766&#34;
+	height=&#34;58&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/make-blog/hugoversion_hu174e1a02c5b841471885b5450acf9a56_48797_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/make-blog/hugoversion_hu174e1a02c5b841471885b5450acf9a56_48797_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;1320&#34;
+		data-flex-basis=&#34;3169px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  如果是上图的样子就说明已经是安装成功了。接下来需要新建一个站点，是我们整个blog存放的位置。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-zsh&#34; data-lang=&#34;zsh&#34;&gt;% hugo new site blog
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;h3 id=&#34;二渲染博客网站主题&#34;&gt;二、渲染博客网站主题&lt;/h3&gt;
+&lt;p&gt;  我们&lt;code&gt;cd blog&lt;/code&gt;，之后的操作都在这个目录下，通过&lt;code&gt;ls -l&lt;/code&gt;查看一下我们新建的这个站点里面初始都有些什么文件。&lt;/p&gt;
+&lt;p&gt;  接下来就是需要给博客网站一个主题，我们可以 &lt;a class=&#34;link&#34; href=&#34;https://themes.gohugo.io&#34;  target=&#34;_blank&#34; rel=&#34;noopener&#34;
+    &gt;点击此处&lt;/a&gt; 去官方网站下载自己喜欢的主题，直接拿来用。点进去一般都有安装教程，用&lt;code&gt;git clone&lt;/code&gt;将主题下载到我们本地&lt;code&gt;/themes&lt;/code&gt;里，如果&lt;code&gt;git clone&lt;/code&gt;不行的话，可以去主题的github仓库，下载zip文件，解析后放在当前目录的&lt;code&gt;/themes&lt;/code&gt;文件下，直观一些看就是这样。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/make-blog/%E7%9B%AE%E5%BD%95.png&#34;
+	width=&#34;936&#34;
+	height=&#34;404&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/make-blog/%E7%9B%AE%E5%BD%95_hu05a85153fea5941047770f6fe31c6ba8_105072_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/make-blog/%E7%9B%AE%E5%BD%95_hu05a85153fea5941047770f6fe31c6ba8_105072_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;231&#34;
+		data-flex-basis=&#34;556px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  我们下载下来的主题都会提供一个example或是&lt;code&gt;/exampleSite&lt;/code&gt;这样的文件夹，可以看该主题的默认介绍和展示效果，亦或者可以在hugo主题官方上看到他的demo，这里我们就在本地查看一下。这里我下载了&lt;code&gt;minima&lt;/code&gt;这个主题来举例子，首先我们把当前目录的&lt;code&gt;config.toml&lt;/code&gt;名字先改了，我改成&lt;code&gt;config_orginal.toml&lt;/code&gt;，然后把我们下载下来的文件里的&lt;code&gt;/exampleSite&lt;/code&gt;所有内容复制下来，粘贴在当前目录，(有的还需要复制&lt;code&gt;/archetyoes&lt;/code&gt;下的文件，具体看是否有多余的内容)，而且还要查看一下&lt;code&gt;config.toml&lt;/code&gt;这个文件里&lt;code&gt;disqusShortname&lt;/code&gt;的值，然后修改我们下载下来的主题文件名为这个值，最终效果如下：&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/make-blog/%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84.png&#34;
+	width=&#34;870&#34;
+	height=&#34;1166&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/make-blog/%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84_hudaa8743664343fef1ba11ce02a82d5b6_274287_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/make-blog/%E7%9B%AE%E5%BD%95%E7%BB%93%E6%9E%84_hudaa8743664343fef1ba11ce02a82d5b6_274287_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;74&#34;
+		data-flex-basis=&#34;179px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;h3 id=&#34;三本地运行博客网站&#34;&gt;三、本地运行博客网站&lt;/h3&gt;
+&lt;p&gt;  接着我们就可以用&lt;code&gt;hugo server -t hugo-minima --buildDrafts&lt;/code&gt;来在本地预览我们的博客网站了，命令里的&lt;code&gt;hugo-minima&lt;/code&gt;是刚才我们修改过的主题文件名。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-zsh&#34; data-lang=&#34;zsh&#34;&gt;% hugo server -t hugo-minima --buildDrafts
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;  当界面如下面这样子，就说明已经在本地运行成功了。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/make-blog/%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88.png&#34;
+	width=&#34;1142&#34;
+	height=&#34;730&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/make-blog/%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88_hub6ef5b799ec21325916e80a8a31380f4_359981_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/make-blog/%E6%9C%AC%E5%9C%B0%E9%A2%84%E8%A7%88_hub6ef5b799ec21325916e80a8a31380f4_359981_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;156&#34;
+		data-flex-basis=&#34;375px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  我们打开浏览器，在输入&lt;code&gt;localhost:1313&lt;/code&gt;或者&lt;code&gt;127.0.0.1:1313&lt;/code&gt;查看我们的博客预览界面。想要具体修改和发布我们的文章呢就在&lt;code&gt;/content&lt;/code&gt;文件下添加修改&lt;code&gt;.md&lt;/code&gt;文件就可以了，其他的一些配置和功能可以在当前目录下的&lt;code&gt;config.toml&lt;/code&gt;和主题文件下下的&lt;code&gt;/layouts&lt;/code&gt;中的&lt;code&gt;.html&lt;/code&gt;文件修改。&lt;/p&gt;
+&lt;h2 id=&#34;部署github&#34;&gt;部署github&lt;/h2&gt;
+&lt;p&gt;  只单单在本地预览肯定是不够的，我们需要一个服务器可以部署我们的网站，这里github提供了很方便的部署方法。首先在我们自己的github账号下新建仓库&lt;code&gt;New repository&lt;/code&gt;，这里要注意的是&lt;code&gt;Repository name&lt;/code&gt;,这个取名必须是你自己的github名称，还需要全部小写，然后加上后缀，比如我这里就是&lt;code&gt;zonzeeli.github.io&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/make-blog/github%E5%88%9B%E5%BB%BA.png&#34;
+	width=&#34;1606&#34;
+	height=&#34;454&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/make-blog/github%E5%88%9B%E5%BB%BA_hu1e32d4322d354903b526170a4a41ca5f_72001_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/make-blog/github%E5%88%9B%E5%BB%BA_hu1e32d4322d354903b526170a4a41ca5f_72001_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;353&#34;
+		data-flex-basis=&#34;848px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  创建好之后接下来的操作就是基本的git操作了，这个不熟悉的同学可以去了解一下基本的步骤就可以，并不是很难，这里也简单介绍一下，另外要注意提前把&lt;code&gt;config.toml&lt;/code&gt;配置文件中的&lt;code&gt;baseUrl&lt;/code&gt;修改成如命令行中一样的地址。&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;div class=&#34;chroma&#34;&gt;
+&lt;table class=&#34;lntable&#34;&gt;&lt;tr&gt;&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code&gt;&lt;span class=&#34;lnt&#34;&gt;1
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+&lt;td class=&#34;lntd&#34;&gt;
+&lt;pre tabindex=&#34;0&#34; class=&#34;chroma&#34;&gt;&lt;code class=&#34;language-zsh&#34; data-lang=&#34;zsh&#34;&gt;% hugo --theme&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;hugo-minima --baseUrl&lt;span class=&#34;o&#34;&gt;=&lt;/span&gt;&lt;span class=&#34;s2&#34;&gt;&amp;#34;https://zonzeeli.github.io&amp;#34;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;
+&lt;/div&gt;
+&lt;/div&gt;&lt;p&gt;  这个命令操作后，会在当前目录下生成一个&lt;code&gt;/public&lt;/code&gt;文件，这时候我们就要进入该目录&lt;code&gt;cd public&lt;/code&gt;，然后执行&lt;code&gt;git init&lt;/code&gt;。&lt;/p&gt;
+&lt;p&gt;  接着就在这个&lt;code&gt;/public&lt;/code&gt;目录下，&lt;code&gt;git add .&lt;/code&gt;，&lt;code&gt;git commit -m &amp;quot;myblog init&amp;quot;&lt;/code&gt;，&lt;code&gt;git remote add origin https://github.com/ZonzeeLi/zonzeeli.github.io.git &lt;/code&gt;，上面这条命令会要求输入github的账号和密码，最后在&lt;code&gt;git push -u origin master&lt;/code&gt;这一步推流到github上。其中&lt;code&gt;&amp;quot;myblog init&amp;quot;&lt;/code&gt;可以自定，原地址也填自己仓库的https地址。下面是git具体输入过的git命令。&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://zonzeeli.github.io/p/make-blog/git%E5%91%BD%E4%BB%A4.png&#34;
+	width=&#34;1122&#34;
+	height=&#34;144&#34;
+	srcset=&#34;https://zonzeeli.github.io/p/make-blog/git%E5%91%BD%E4%BB%A4_hu7b771d9929c250bf208eeec79ddd017f_81769_480x0_resize_box_3.png 480w, https://zonzeeli.github.io/p/make-blog/git%E5%91%BD%E4%BB%A4_hu7b771d9929c250bf208eeec79ddd017f_81769_1024x0_resize_box_3.png 1024w&#34;
+	loading=&#34;lazy&#34;
+	
+	
+		class=&#34;gallery-image&#34; 
+		data-flex-grow=&#34;779&#34;
+		data-flex-basis=&#34;1870px&#34;
+	
+&gt;&lt;/p&gt;
+&lt;p&gt;  这一切操作完我们就将博客部署到了github上了，直接输入我们之前的baseURL就可以进入到我们的博客了。&lt;/p&gt;
+</description>
+        </item>
+        
+    </channel>
+</rss>
