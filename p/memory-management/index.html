@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='Go语言内存对齐、内存分配、垃圾回收、内存泄漏的概念及代码和问题分析'><title>Go语言——内存管理</title>
+
+<link rel='canonical' href='https://zonzeeli.github.io/p/memory-management/'>
+
+<link rel="stylesheet" href="/scss/style.min.450926226e724574a6b936335ea06111f8aeb253d932c86cb2cc807341cd2889.css"><meta property='og:title' content='Go语言——内存管理'>
+<meta property='og:description' content='Go语言内存对齐、内存分配、垃圾回收、内存泄漏的概念及代码和问题分析'>
+<meta property='og:url' content='https://zonzeeli.github.io/p/memory-management/'>
+<meta property='og:site_name' content='Zonzee Li 👨‍💻'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='go' /><meta property='article:published_time' content='2022-06-13T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2022-06-13T00:00:00&#43;00:00'/><meta property='og:image' content='https://zonzeeli.github.io/p/memory-management/memorymanagement.jpg' />
+<meta name="twitter:title" content="Go语言——内存管理">
+<meta name="twitter:description" content="Go语言内存对齐、内存分配、垃圾回收、内存泄漏的概念及代码和问题分析"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://zonzeeli.github.io/p/memory-management/memorymanagement.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu77a3462afc37200b06a1519079618b2f_1084312_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">💻</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Zonzee Li 👨‍💻</a></h1>
+            <h2 class="site-description">一个耐心学习的小程序员。记录生活，享受生活的Gopher。</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/ZonzeeLi'
+                        target="_blank"
+                        title="GitHub"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about-me/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About me</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/memory-management/">
+                <img src="/p/memory-management/memorymanagement_hu401943aa3a47c07a1760c3a69afc10a0_2088324_800x0_resize_q75_box.jpg"
+                        srcset="/p/memory-management/memorymanagement_hu401943aa3a47c07a1760c3a69afc10a0_2088324_800x0_resize_q75_box.jpg 800w, /p/memory-management/memorymanagement_hu401943aa3a47c07a1760c3a69afc10a0_2088324_1600x0_resize_q75_box.jpg 1600w"
+                        width="800" 
+                        height="533" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——内存管理" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/go/" >
+                Go
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/memory-management/">Go语言——内存管理</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            Go语言内存对齐、内存分配、垃圾回收、内存泄漏的概念及代码和问题分析
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Jun 13, 2022</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    6 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="前言">前言</h2>
+<p>  这篇文章主要整合了 Go 语言的一些内存管理的知识，只是浅显笼统概括，并且用一些面试题来总结。</p>
+<p>注：以下内容和图片基本来自公众号：网管叨bi叨，一个我经常看的博主，推荐关注。</p>
+<h3 id="内存对齐">内存对齐</h3>
+<p>  我们编程的任何一个变量在内存中存放都按照一定的规则，这里主要介绍的就是内存对齐的规则，下面为简单概括，详情见文章<a class="link" href="https://zonzeeli.github.io/p/memory-alignment/"  target="_blank" rel="noopener"
+    >Go语言——内存对齐</a></p>
+<p>  理论上计算机可以访问任意地址的变量，但是在访问特定类型通常在特定的内存地址中，数据存放并不是随意存放，是有规则的顺序，我们能够分析出，内存对齐是为了能够快速访问内存进行数据的存取，但是会消耗内存空间，用空间换时间的一种内存存储规则。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="nx">s1</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1&#34;</span><span class="p">,</span> <span class="s">&#34;2&#34;</span><span class="p">,</span> <span class="s">&#34;3&#34;</span><span class="p">}</span>
+	<span class="nx">s2</span> <span class="o">:=</span> <span class="p">[]</span><span class="kt">string</span><span class="p">{</span><span class="s">&#34;1&#34;</span><span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">s1</span><span class="p">))</span> <span class="c1">// 24
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">s2</span><span class="p">))</span> <span class="c1">// 24
+</span><span class="c1"></span>
+	<span class="kd">type</span> <span class="nx">t1</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>
+		<span class="nx">b</span> <span class="kt">int64</span>
+		<span class="nx">c</span> <span class="kt">int32</span>
+	<span class="p">}</span>
+	<span class="kd">type</span> <span class="nx">t2</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>
+		<span class="nx">b</span> <span class="kt">int32</span>
+		<span class="nx">c</span> <span class="kt">int64</span>
+	<span class="p">}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">t1</span><span class="p">{}))</span> <span class="c1">// 24
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">t2</span><span class="p">{}))</span> <span class="c1">// 16
+</span><span class="c1"></span><span class="p">}</span>
+
+</code></pre></td></tr></table>
+</div>
+</div><p>  是不是对这个结果有疑问呢？为什么<code>s1</code>和<code>s2</code>的数据长度不同，但是打印出的内存长度一样？为什么<code>t1</code>和<code>t2</code>的结构体只是定义的顺序不同，内存长度却不一样？</p>
+<p>  这里要说明一下，go语言通过unsafe.Sizeof(x)打印的变量占用的内存字节数，和底层数据无关，不包含x所指向的内容大小，所以第一个疑问解决了。也同理我们可以通过unsafe.Sizeof()打印出各个类型的内存占用大小。</p>
+<p>  注：这里使用的是64位系统。</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>类型</th>
+<th>字节数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bool</td>
+<td>1</td>
+</tr>
+<tr>
+<td>intN, uintN, floatN, complexN</td>
+<td>N/8 个字节 （int32 是 4 个字节）</td>
+</tr>
+<tr>
+<td>int, uint, uintptr</td>
+<td>计算机字长/8 (64位 是 8 个字节)</td>
+</tr>
+<tr>
+<td>*T, map, func, chan</td>
+<td>计算机字长/8 (64位 是 8 个字节)</td>
+</tr>
+<tr>
+<td>string （data、len）</td>
+<td>2 * 计算机字长/8 (64位 是 16 个字节)</td>
+</tr>
+<tr>
+<td>interface (tab、data 或 _type、data)</td>
+<td>2 * 计算机字长/8 (64位 是 16 个字节)</td>
+</tr>
+<tr>
+<td>[]T (array、len、cap)</td>
+<td>3 * 计算机字长/8 (64位 是 24 个字节)</td>
+</tr>
+</tbody>
+</table></div>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">type</span> <span class="nx">t</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="nx">a</span> <span class="kt">bool</span> <span class="c1">// 1个字节
+</span><span class="c1"></span>    <span class="nx">b</span> <span class="kt">int</span>     <span class="c1">// 8个字节
+</span><span class="c1"></span>    <span class="nx">c</span> <span class="kt">string</span> <span class="c1">// 16个字节
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  对于上面的结构，如果是没有进行过内存对齐，则按照存放的顺序，以64位系统的每8个字节取数据的规则，会发现除了<code>a</code>，<code>b</code>和<code>c</code>都不是从头取的，过程如图：</p>
+<p><img src="/p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E9%94%99%E8%AF%AF%E8%AE%A4%E4%B8%BA%E5%AD%98%E6%94%BE.png"
+	width="1589"
+	height="405"
+	srcset="/p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E9%94%99%E8%AF%AF%E8%AE%A4%E4%B8%BA%E5%AD%98%E6%94%BE_hu3e76a038d58f2f1062ae644cd8f6b655_27362_480x0_resize_box_3.png 480w, /p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E9%94%99%E8%AF%AF%E8%AE%A4%E4%B8%BA%E5%AD%98%E6%94%BE_hu3e76a038d58f2f1062ae644cd8f6b655_27362_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="392"
+		data-flex-basis="941px"
+	
+></p>
+<p>  这里就有一个问题，对于<code>b</code>和<code>c</code>没有做到从起始位开始取数据，所以会造成之后在再次拼接整理的操作，需要多次内存访问和整理的步骤。而如果经过内存对齐，就会如图：</p>
+<p><img src="/p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90.png"
+	width="1590"
+	height="405"
+	srcset="/p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90_hu30eb8e292f8ff7e8cdbfc0b3de51ce1a_37503_480x0_resize_box_3.png 480w, /p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90_hu30eb8e292f8ff7e8cdbfc0b3de51ce1a_37503_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="392"
+		data-flex-basis="942px"
+	
+></p>
+<p>  所以我们能发现，内存对齐减少了操作步骤，但是却浪费了内存空间占用的资源。</p>
+<h4 id="内存对齐规则">内存对齐规则</h4>
+<ul>
+<li>成员对齐规则：针对一个基础类型变量，如果<code>unsafe.AlignOf()</code>返回的值是<code>m</code>，那么该变量的地址需要被<code>m</code>整除（如果当前地址不能整除，填充空白字节，直至可以整除）。</li>
+<li>整体对齐规则：针对一个结构体，如果<code>unsafe.AlignOf()</code>返回值是<code>m</code>，需要保证该结构体整体内存占用是<code>m</code>的整数倍，如果当前不是整数倍，需要在后面填充空白字节。</li>
+</ul>
+<p>  针对该规则，我们再把上述的结构体和<code>unsafe.Offsetof()</code>拿出来分析一下：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="kd">type</span> <span class="nx">t1</span> <span class="kd">struct</span> <span class="p">{</span>
+		<span class="nx">a</span> <span class="kt">int32</span>   <span class="c1">// 4个字节
+</span><span class="c1"></span>		<span class="nx">b</span> <span class="kt">int64</span>   <span class="c1">// 8个字节
+</span><span class="c1"></span>		<span class="nx">c</span> <span class="kt">float32</span> <span class="c1">// 4个字节
+</span><span class="c1"></span>		<span class="nx">d</span> <span class="kt">bool</span>    <span class="c1">// 1个字节
+</span><span class="c1"></span>	<span class="p">}</span>
+	<span class="nx">t</span> <span class="o">:=</span> <span class="nx">t1</span><span class="p">{}</span>
+	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">a</span><span class="p">))</span> <span class="c1">// 0
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">b</span><span class="p">))</span> <span class="c1">// 8
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">c</span><span class="p">))</span> <span class="c1">// 16
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Offsetof</span><span class="p">(</span><span class="nx">t</span><span class="p">.</span><span class="nx">d</span><span class="p">))</span> <span class="c1">// 20
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Alignof</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>    <span class="c1">// 8
+</span><span class="c1"></span>	<span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="nx">unsafe</span><span class="p">.</span><span class="nf">Sizeof</span><span class="p">(</span><span class="nx">t</span><span class="p">))</span>     <span class="c1">// 24
+</span><span class="c1"></span>	<span class="c1">// 假设从地址0开始
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(int32(1)) = 4，unsafe.Alignof(int32(1)) = 4，地址0开始，可以被4整除
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(int64(1)) = 8，unsafe.Alignof(int64(1)) = 8，地址需要从8开始，才可以被8整除，[4,8]的位置用0来补充
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(float32(1)) = 4，unsafe.Alignof(float32(1)) = 4，地址需要从16开始，可以被4整除，[8,16]的位置被t.b占满
+</span><span class="c1"></span>	<span class="c1">// unsafe.Sizeof(true) = 1, unsafe.Alignof(true) = 1, 地址从20开始即可，[16,20]的位置被c沾满。
+</span><span class="c1"></span>	<span class="c1">// 由于结构体也需要对齐，要被8整除，所以要补0到24。
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="/p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E4%BE%8B%E5%AD%90.png"
+	width="1245"
+	height="484"
+	srcset="/p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E4%BE%8B%E5%AD%90_hu3f36a1c570ec2b1c16972b281c5088f4_40718_480x0_resize_box_3.png 480w, /p/memory-management/%E5%86%85%E5%AD%98%E5%AF%B9%E9%BD%90%E4%BE%8B%E5%AD%90_hu3f36a1c570ec2b1c16972b281c5088f4_40718_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+		alt="内存对齐例子"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="257"
+		data-flex-basis="617px"
+	
+></p>
+<h3 id="内存分配">内存分配</h3>
+<p>知道了内存存放的规则后，那么我们应该清楚是计算机是如何给程序分配内存的。</p>
+<p>  Golang运行时的内存分配算法主要源自 Google 为 C 语言开发的TCMalloc算法，全称Thread-Caching Malloc。核心思想就是把内存分为多级管理，从而降低锁的粒度。它将可用的堆内存采用二级分配的方式进行管理：每个线程都会自行维护一个独立的内存池，进行内存分配时优先从该内存池中分配，当内存池不足时才会向全局内存池申请，以避免不同线程对全局内存池的频繁竞争。</p>
+<p>  在Go里面有两种内存分配策略，一种适用于程序里小内存块的申请，另一种适用于大内存块的申请，大内存块指的是大于32KB。</p>
+<h4 id="基础概念">基础概念</h4>
+<p>mspan：Go中内存管理的基本单元，是由一片连续的8KB的页组成的大块内存。注意，这里的页和操作系统本身的页并不是一回事，它一般是操作系统页大小的几倍。一句话概括：mspan是一个包含起始地址、mspan规格、页的数量等内容的双端链表。每个mspan按照它自身的属性Size Class的大小分割成若干个object，每个object可存储一个对象。</p>
+<p>mcache：每个工作线程都会绑定一个mcache，本地缓存可用的mspan资源，这样就可以直接给Goroutine分配，因为不存在多个Goroutine竞争的情况，所以不会消耗锁资源。</p>
+<p>mcentral：为所有mcache提供切分好的mspan资源。每个central保存一种特定大小的全局mspan列表，包括已分配出去的和未分配出去的。 每个mcentral对应一种mspan，而mspan的种类导致它分割的object大小不同。当工作线程的mcache中没有合适（也就是特定大小的）的mspan时就会从mcentral获取。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="c1">//path: /usr/local/go/src/runtime/mcentral.go
+</span><span class="c1"></span>
+<span class="kd">type</span> <span class="nx">mcentral</span> <span class="kd">struct</span> <span class="p">{</span>
+    <span class="c1">// 互斥锁
+</span><span class="c1"></span>    <span class="nx">lock</span> <span class="nx">mutex</span> 
+    <span class="c1">// 规格
+</span><span class="c1"></span>    <span class="nx">sizeclass</span> <span class="kt">int32</span> 
+    <span class="c1">// 尚有空闲object的mspan链表
+</span><span class="c1"></span>    <span class="nx">nonempty</span> <span class="nx">mSpanList</span> 
+    <span class="c1">// 没有空闲object的mspan链表，或者是已被mcache取走的msapn链表
+</span><span class="c1"></span>    <span class="nx">empty</span> <span class="nx">mSpanList</span> 
+    <span class="c1">// 已累计分配的对象个数
+</span><span class="c1"></span>    <span class="nx">nmalloc</span> <span class="kt">uint64</span> 
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>mheap：代表Go程序持有的所有堆空间，Go程序使用一个mheap的全局对象_mheap来管理堆内存。</p>
+<p>  当mcentral没有空闲的mspan时，会向mheap申请。而mheap没有资源时，会向操作系统申请新内存。mheap主要用于大对象的内存分配，以及管理未切割的mspan，用于给mcentral切割成小对象。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kd">type</span> <span class="nx">smallStruct</span> <span class="kd">struct</span> <span class="p">{</span>
+   <span class="nx">a</span><span class="p">,</span> <span class="nx">b</span> <span class="kt">int64</span>
+   <span class="nx">c</span><span class="p">,</span> <span class="nx">d</span> <span class="kt">float64</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+   <span class="nf">smallAllocation</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="c1">//go:noinline
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">smallAllocation</span><span class="p">()</span> <span class="o">*</span><span class="nx">smallStruct</span> <span class="p">{</span>
+   <span class="k">return</span> <span class="o">&amp;</span><span class="nx">smallStruct</span><span class="p">{}</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><h4 id="小于-32-kb-内存块的分配策略">小于 32 KB 内存块的分配策略</h4>
+<p>  当程序里发生了32kb以下的小块内存申请时，Go会从一个叫做的 mcache 的本地缓存给程序分配内存。这个本地缓存 mcache 持有一系列的大小为 32kb 的内存块，这样的一个内存块里叫做 mspan，它是要给程序分配内存时的分配单元。</p>
+<p>  在 Go 的调度器模型里，每个线程M会绑定给一个处理器P，在单一粒度的时间里只能做多处理运行一个goroutine，每个P都会绑定一个上面说的本地缓存mcache。当需要进行内存分配时，当前运行的goroutine会从mcache中查找可用的mspan。从本地mcache里分配内存时不需要加锁，这种分配策略效率更高。</p>
+<p><img src="/p/memory-management/%E5%B0%8F%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D.png"
+	width="587"
+	height="388"
+	srcset="/p/memory-management/%E5%B0%8F%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D_hu0a7abb04b5d962db8f63232a4446f9b7_55474_480x0_resize_box_3.png 480w, /p/memory-management/%E5%B0%8F%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D_hu0a7abb04b5d962db8f63232a4446f9b7_55474_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="151"
+		data-flex-basis="363px"
+	
+></p>
+<p>  但是有的变量很小就是数字，有的却是一个复杂的结构体，申请内存时都分给他们一个mspan这样的单元会不会产生浪费。其实mcache持有的这一系列的mspan并不都是统一大小的，而是按照大小，从8字节到32KB分了67类的msapn。</p>
+<p><img src="/p/memory-management/mcache.png"
+	width="502"
+	height="409"
+	srcset="/p/memory-management/mcache_huf455407eec686e2a53900cf86012cf72_55182_480x0_resize_box_3.png 480w, /p/memory-management/mcache_huf455407eec686e2a53900cf86012cf72_55182_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="122"
+		data-flex-basis="294px"
+	
+></p>
+<p>  结构体刚好是32字节，所以直接分配到其中一个，但是如果mcachce里没有空闲的32字节的mspan了该怎么办？Go里还为每种类别的mspan维护着一个mcentral。</p>
+<p>  刚才说过mcentral的作用是为所有mcache提供切分好的mspan资源。每个central会持有一种特定大小的全局mspan列表，包括已分配出去的和未分配出去的。 每个mcentral对应一种mspan，当工作线程的mcache中没有合适（也就是特定大小的）的mspan时就会从mcentral 去获取。mcentral被所有的工作线程共同享有，存在多个goroutine竞争的情况，因此从mcentral获取资源时需要加锁。</p>
+<p>  mcentral里维护着两个双向链表，nonempty表示链表里还有空闲的mspan待分配。empty表示这条链表里的mspan都被分配了object。</p>
+<p>mcache从mcentral获取和归还mspan的流程：</p>
+<ul>
+<li>获取 加锁；从nonempty链表找到一个可用的mspan；并将其从nonempty链表删除；将取出的mspan加入到empty链表；将mspan返回给工作线程；解锁。</li>
+<li>归还 加锁；将mspan从empty链表删除；将mspan加入到nonempty链表；解锁。</li>
+</ul>
+<p><img src="/p/memory-management/mcache%E4%BB%8Emcentra%E8%8E%B7%E5%8F%96mspan.png"
+	width="705"
+	height="412"
+	srcset="/p/memory-management/mcache%E4%BB%8Emcentra%E8%8E%B7%E5%8F%96mspan_hu01d050465a2ccc25b5a7a33d343309cb_65891_480x0_resize_box_3.png 480w, /p/memory-management/mcache%E4%BB%8Emcentra%E8%8E%B7%E5%8F%96mspan_hu01d050465a2ccc25b5a7a33d343309cb_65891_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="171"
+		data-flex-basis="410px"
+	
+></p>
+<p>当mcentral没有空闲的mspan时，会向mheap申请。而mheap没有资源时，会向操作系统申请新内存。mheap主要用于大对象的内存分配，以及管理未切割的mspan，用于给mcentral切割成小对象。mheap中含有所有规格的mcentral，所以，当一个mcache从mcentral申请mspan时，只需要在独立的mcentral中使用锁，并不会影响申请其他规格的mspan。</p>
+<p>mheap里的arena 区域是真正的堆区，运行时会将 8KB 看做一页，这些内存页中存储了所有在堆上初始化的对象。</p>
+<p><img src="/p/memory-management/mheap.png"
+	width="457"
+	height="309"
+	srcset="/p/memory-management/mheap_hu0fbf48ef2fe0ee1b99027905191b94d3_36230_480x0_resize_box_3.png 480w, /p/memory-management/mheap_hu0fbf48ef2fe0ee1b99027905191b94d3_36230_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="147"
+		data-flex-basis="354px"
+	
+></p>
+<h4 id="大于-32-kb-内存块的内存分配">大于 32 KB 内存块的内存分配</h4>
+<p>  Go没法使用工作线程的本地缓存mcache和全局中心缓存mcentral上管理超过32KB的内存分配，所以对于那些超过32KB的内存申请，会直接从堆上(mheap)上分配对应的数量的内存页（每页大小是8KB）给程序。</p>
+<p><img src="/p/memory-management/%E5%A4%A7%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D.png"
+	width="588"
+	height="201"
+	srcset="/p/memory-management/%E5%A4%A7%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D_hud16c384e94a535d77d496485f3d694cf_35309_480x0_resize_box_3.png 480w, /p/memory-management/%E5%A4%A7%E5%86%85%E5%AD%98%E5%88%86%E9%85%8D_hud16c384e94a535d77d496485f3d694cf_35309_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="292"
+		data-flex-basis="702px"
+	
+></p>
+<h3 id="逃逸分析">逃逸分析</h3>
+<p>  通常情况下，编译器是倾向于将变量分配到栈上的，因为它的开销小，最极端的就是&quot;zero garbage&quot;，所有的变量都会在栈上分配，这样就不会存在内存碎片，垃圾回收之类的东西。变量是在栈上分配还是在堆上分配，是由逃逸分析的结果决定的。</p>
+<p>Go 官方上有这么一段内存逃逸分析的QA</p>
+<p>Q：如何得知变量是分配在栈（stack）上还是堆（heap）上？</p>
+<p>A: 准确地说，你并不需要知道。Golang 中的变量只要被引用就一直会存活，存储在堆上还是栈上由内部实现决定而和具体的语法没有关系。知道变量的存储位置确实对程序的效率有帮助。如果可能，Golang 编译器会将函数的局部变量分配到函数栈帧（stack frame）上。然而，如果编译器不能确保变量在函数 return 之后不再被引用，编译器就会将变量分配到堆上。而且，如果一个局部变量非常大，那么它也应该被分配到堆上而不是栈上。当前情况下，如果一个变量被取地址，那么它就有可能被分配到堆上。然而，还要对这些变量做逃逸分析，如果函数 return 之后，变量不再被引用，则将其分配到栈上。</p>
+<p>  Go编译器会跨越函数和包的边界进行全局的逃逸分析。它会检查是否需要在堆上为一个变量分配内存，还是说可以在栈本身的内存里对其进行管理。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+  <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Called heapAnalysis&#34;</span><span class="p">,</span> <span class="nf">heapAnalysis</span><span class="p">())</span>
+<span class="p">}</span>
+<span class="c1">//go:noinline
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">heapAnalysis</span><span class="p">()</span> <span class="o">*</span><span class="kt">int</span> <span class="p">{</span>
+   <span class="nx">data</span> <span class="o">:=</span> <span class="mi">55</span>
+   <span class="k">return</span> <span class="o">&amp;</span><span class="nx">data</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="nx">build</span> <span class="o">-</span><span class="nx">gcflags</span> <span class="s">&#34;-m -l&#34;</span>
+
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">9</span><span class="p">:</span><span class="mi">9</span><span class="p">:</span> <span class="o">&amp;</span><span class="nx">data</span> <span class="nx">escapes</span> <span class="nx">to</span> <span class="nx">heap</span>
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">8</span><span class="p">:</span><span class="mi">2</span><span class="p">:</span> <span class="nx">moved</span> <span class="nx">to</span> <span class="nx">heap</span><span class="p">:</span> <span class="nx">data</span>
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">14</span><span class="p">:</span> <span class="s">&#34;Called heapAnalysis&#34;</span> <span class="nx">escapes</span> <span class="nx">to</span> <span class="nx">heap</span>
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">49</span><span class="p">:</span> <span class="nf">heapAnalysis</span><span class="p">()</span> <span class="nx">escapes</span> <span class="nx">to</span> <span class="nx">heap</span>
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">13</span><span class="p">:</span> <span class="nx">main</span> <span class="o">...</span> <span class="nx">argument</span> <span class="nx">does</span> <span class="nx">not</span> <span class="nx">escape</span>
+</code></pre></td></tr></table>
+</div>
+</div><p><img src="/p/memory-management/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90.png"
+	width="714"
+	height="520"
+	srcset="/p/memory-management/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90_hube57392961af9e80ebdc2f4a8a25d343_24148_480x0_resize_box_3.png 480w, /p/memory-management/%E9%80%83%E9%80%B8%E5%88%86%E6%9E%90_hube57392961af9e80ebdc2f4a8a25d343_24148_1024x0_resize_box_3.png 1024w"
+	loading="lazy"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="137"
+		data-flex-basis="329px"
+	
+></p>
+<p>main和heapAnalysis函数分配在一个栈上。由于函数具有自己的变量，因此也会将变量分配到栈的某个地方。但是编译器检查到该值是返回了它的指针，并且已用于另一个函数，因此变量被移到了堆中，主函数会从堆中访问该变量。</p>
+<p>有个特殊说明，</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kn">package</span> <span class="nx">main</span>
+
+<span class="kn">import</span> <span class="s">&#34;fmt&#34;</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;Called stackAnalysis&#34;</span><span class="p">,</span> <span class="nf">stackAnalysis</span><span class="p">())</span>
+<span class="p">}</span>
+<span class="c1">//go:noinline (加一行特殊的注释让编译器不对函数进行内联，内联是一种手动或编译器优化，用于将简短函数的调用替换为函数体本身。这么做的原因是它可以消除函数调用本身的开销，也使得编译器能更高效地执行其他的优化策略)
+</span><span class="c1"></span><span class="kd">func</span> <span class="nf">stackAnalysis</span><span class="p">()</span> <span class="kt">int</span> <span class="p">{</span>
+    <span class="nx">data</span> <span class="o">:=</span> <span class="mi">55</span>
+    <span class="k">return</span> <span class="nx">data</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="k">go</span> <span class="nx">build</span> <span class="o">-</span><span class="nx">gcflags</span> <span class="s">&#34;-m -l&#34;</span>
+
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">14</span><span class="p">:</span> <span class="s">&#34;Called stackAnalysis&#34;</span> <span class="nx">escapes</span> <span class="nx">to</span> <span class="nx">heap</span>
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">51</span><span class="p">:</span> <span class="nf">stackAnalysis</span><span class="p">()</span> <span class="nx">escapes</span> <span class="nx">to</span> <span class="nx">heap</span>
+<span class="p">.</span><span class="o">/</span><span class="nx">scratch</span><span class="p">.</span><span class="k">go</span><span class="p">:</span><span class="mi">4</span><span class="p">:</span><span class="mi">13</span><span class="p">:</span> <span class="nx">main</span> <span class="o">...</span> <span class="nx">argument</span> <span class="nx">does</span> <span class="nx">not</span> <span class="nx">escape</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>第4行14个字符处的字符串标量&quot;Called stackAnalysis&quot;逃逸到堆上。</p>
+<p>第4行51个字符串的函数调用stackAnalysis()逃逸到了堆上。</p>
+<p>escapes to heap&quot;的意思是变量需要在函数栈之间共享，上面的例子就是在<code>main</code>和<code>fmt.Println</code>之间共享。main和stackAnalysis函数分配在一个栈上。由于函数具有自己的变量，因此也会将变量分配到栈的某个地方。当函数返回时，与该函数关联的所有变量也会从内存中删除。这里并没有逃逸到堆上，而是在栈上。这里是因为<code>fmt.Print</code>系列的函数问题，变量逃逸了，如果是<code>print</code>，会打印的是<code>does not escape</code>。</p>
+<h3 id="垃圾回收">垃圾回收</h3>
+<p>  内存分配了之后要回收，这就需要 GC。什么是 GC？PHP、Java 和 Go 等语言使用自动的内存管理系统，有内存分配器和垃圾收集器来代为分配和回收内存，其中垃圾收集器就是我们常说的GC。</p>
+<p>  主要原因是栈是一块专用内存，专门为了函数执行而准备的，存储着函数中的局部变量以及调用栈。除此以外，栈中的数据都有一个特点——简单。比如局部变量不能被函数外访问，所以这块内存用完就可以直接释放。正是因为这个特点，栈中的数据可以通过简单的编译器指令自动清理，并不需要通过 GC 来回收。</p>
+<p>  Go的垃圾收集器从一开始到现在一直在演进，在v1.5版本开始三色标记法作为垃圾回收算法前使用Mark-And-Sweep（标记清除）算法。从v1.5版本Go实现了基于三色标记清除的并发垃圾收集器，大幅度降低垃圾收集的延迟从几百 ms 降低至 10ms 以下。在v1.8又使用混合写屏障将垃圾收集的时间缩短至 0.5ms 以内。</p>
+<h4 id="三色标记法">三色标记法</h4>
+<p>三色标记算法将程序中的对象分成白色、黑色和灰色三类：</p>
+<ul>
+<li>白色对象 — 潜在的垃圾，其内存可能会被垃圾收集器回收；</li>
+<li>黑色对象 — 活跃的对象，包括不存在任何引用外部指针的对象以及从根对象可达的对象，垃圾回收器不会扫描这些对象的子对象；</li>
+<li>灰色对象 — 活跃的对象，因为存在指向白色对象的外部指针，垃圾收集器会扫描这些对象的子对象；</li>
+</ul>
+<p>第一步：在进入GC的三色标记阶段的一开始，所有对象都是白色的。</p>
+<p><img src="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B61.jpg"
+	width="720"
+	height="426"
+	srcset="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B61_hu47e13ab40d59a7dbeb4345aef9037e83_25943_480x0_resize_q75_box.jpg 480w, /p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B61_hu47e13ab40d59a7dbeb4345aef9037e83_25943_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="垃圾回收1"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="169"
+		data-flex-basis="405px"
+	
+></p>
+<p>第二步, 遍历根节点集合里的所有根对象，把根对象引用的对象标记为灰色，从白色集合放入灰色集合。</p>
+<p><img src="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B62.jpg"
+	width="720"
+	height="428"
+	srcset="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B62_hu1266a4c5006d9b335b85b45076e6c874_28044_480x0_resize_q75_box.jpg 480w, /p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B62_hu1266a4c5006d9b335b85b45076e6c874_28044_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="垃圾回收2"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="168"
+		data-flex-basis="403px"
+	
+></p>
+<p>第三步, 遍历灰色集合，将灰色对象引用的对象从白色集合放入灰色集合，之后将此灰色对象放入黑色集合</p>
+<p><img src="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B63.jpg"
+	width="720"
+	height="430"
+	srcset="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B63_hufbdd632f9c4321623f7119de15bdc380_27970_480x0_resize_q75_box.jpg 480w, /p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B63_hufbdd632f9c4321623f7119de15bdc380_27970_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="垃圾回收3"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="167"
+		data-flex-basis="401px"
+	
+></p>
+<p>第四步：重复第三步, 直到灰色集合中无任何对象。</p>
+<p><img src="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B64.jpg"
+	width="720"
+	height="439"
+	srcset="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B64_hu228be264abaf447f28961f3a9f627d9d_26763_480x0_resize_q75_box.jpg 480w, /p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B64_hu228be264abaf447f28961f3a9f627d9d_26763_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="垃圾回收4"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="164"
+		data-flex-basis="393px"
+	
+></p>
+<p>第五步：回收白色集合里的所有对象，本次垃圾回收结束。</p>
+<p><img src="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B65.jpg"
+	width="720"
+	height="428"
+	srcset="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B65_hud370c5a2f5c2961c316d38b35214f886_22204_480x0_resize_q75_box.jpg 480w, /p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B65_hud370c5a2f5c2961c316d38b35214f886_22204_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="垃圾回收5"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="168"
+		data-flex-basis="403px"
+	
+></p>
+<h4 id="写屏障">写屏障</h4>
+<p>  Go 在GC阶段执行三色标记前，还需要先做一个准备工作——打开写屏障(Write Barrier)。那么写屏障是什么呢？我们知道三色标记法是一种可以并发执行的算法。所以在GC运行过程中程序的函数栈内可能会有新分配的对象，那么这些对象该怎么通知到 GC，怎么给他们着色呢？如果还是按照之前新建的对象标记为白色就有可能出现下图中的问题：</p>
+<p><img src="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B66.jpg"
+	width="720"
+	height="421"
+	srcset="/p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B66_hu0075fe4baa98b4118e04fb866f09037d_29307_480x0_resize_q75_box.jpg 480w, /p/memory-management/%E5%9E%83%E5%9C%BE%E5%9B%9E%E6%94%B66_hu0075fe4baa98b4118e04fb866f09037d_29307_1024x0_resize_q75_box.jpg 1024w"
+	loading="lazy"
+	
+		alt="垃圾回收6"
+	
+	
+		class="gallery-image" 
+		data-flex-grow="171"
+		data-flex-basis="410px"
+	
+></p>
+<p>  在 GC 进行的过程中，应用程序新建了对象 I，此时如果已经标记成黑的对象F引用了对象 I，那么在本次 GC 执行过程中因为黑色对象不会再次扫描，所以如果I着色成白色的话，会被回收掉，这显然是不允许的。</p>
+<p>  这个时候就需要我们的写屏障出马了。写屏障主要做一件事情，修改原先的写逻辑，然后在对象新增的同时给它着色，并且着色为灰色。因此打开了写屏障可以保证了三色标记法在并发下安全正确地运行。那么有人就会问这些写屏障标记成灰色的对象什么时候回收呢？答案是后续的 GC 过程中回收，在新的 GC 过程中所有已存对象就又从白色开始逐步被标记啦。</p>
+<h4 id="三色不变性">三色不变性</h4>
+<p>  想要在并发或者增量的标记算法中保证正确性，我们需要达成以下两种三色不变性（Tri-color invariant）中的任意一种：</p>
+<ul>
+<li>强三色不变性 — 黑色对象不会指向白色对象，只会指向灰色对象或者黑色对象；</li>
+<li>弱三色不变性 — 黑色对象指向的白色对象必须包含一条从灰色对象经由多个白色对象的可达路径</li>
+</ul>
+<h4 id="屏障技术">屏障技术</h4>
+<p>  垃圾收集中的屏障技术更像是一个钩子方法，它是在用户程序读取对象、创建新对象以及更新对象指针时执行的一段代码，根据操作类型的不同，我们可以将它们分成读屏障（Read barrier）和写屏障（Write barrier）两种，因为读屏障需要在读操作中加入代码片段，对用户程序的性能影响很大，所以编程语言往往都会采用写屏障保证三色不变性。</p>
+<h4 id="go-的混合写屏障">Go 的混合写屏障</h4>
+<p>  在Go 语言 v1.7 版本之前，使用的是Dijkstra插入写屏障保证强三色不变性，但是运行时并没有在所有的垃圾收集根对象上开启插入写屏障。因为 Go 语言的应用程序可能包含成百上千的 goroutine，而垃圾收集的根对象一般包括全局变量和栈对象，如果运行时需要在几百个 goroutine 的栈上都开启写屏障，会带来巨大的额外开销，所以 Go 团队在实现上选择了在标记阶段完成时暂停程序、将所有栈对象标记为灰色并重新扫描，在活跃 goroutine 非常多的程序中，重新扫描的过程需要占用 10 ~ 100ms 的时间。</p>
+<p>Go 语言在 v1.8 组合 Dijkstra 插入写屏障和 Yuasa 删除写屏障构成了如下所示的混合写屏障，该写屏障会将被覆盖的对象标记成灰色并在当前栈没有扫描时将新对象也标记成灰色：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="nf">writePointer</span><span class="p">(</span><span class="nx">slot</span><span class="p">,</span> <span class="nx">ptr</span><span class="p">):</span>
+    <span class="nf">shade</span><span class="p">(</span><span class="o">*</span><span class="nx">slot</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nx">current</span> <span class="nx">stack</span> <span class="nx">is</span> <span class="nx">grey</span><span class="p">:</span>
+        <span class="nf">shade</span><span class="p">(</span><span class="nx">ptr</span><span class="p">)</span>
+    <span class="o">*</span><span class="nx">slot</span> <span class="p">=</span> <span class="nx">ptr</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>  为了移除栈的重扫描过程，除了引入混合写屏障之外，在垃圾收集的标记阶段，我们还需要将创建的所有新对象都标记成黑色，防止新分配的栈内存和堆内存中的对象被错误地回收，因为栈内存在标记阶段最终都会变为黑色，所以不再需要重新扫描栈空间。</p>
+<h4 id="一次完整的gc过程">一次完整的GC过程</h4>
+<p>  Go的垃圾回收器在使用了三色标记清除算法和混合写屏障后大大减少了暂停程序（STW）的时间，主要是在开启写屏障前和移除写屏障前暂停应用程序。</p>
+<p>  Go的垃圾收集的整个过程可以分成标记准备、标记、标记终止和清除四个不同阶段，每个阶段完成的工作如下：</p>
+<h5 id="标记准备阶段">标记准备阶段</h5>
+<p>  暂停程序，所有的处理器在这时会进入安全点（Safe point）</p>
+<h5 id="标记阶段">标记阶段</h5>
+<ul>
+<li>将状态切换至 <code>_GCmark</code>、开启写屏障、用户程序协助（Mutator Assiste）并将根对象入队；</li>
+<li>恢复执行程序，标记进程和用于协助的用户程序会开始并发标记内存中的对象，标记用的算法就是上面介绍的三色标记清除法。写屏障会将被覆盖的指针和新指针都标记成灰色，而所有新创建的对象都会被直接标记成黑色；</li>
+<li>开始扫描根对象，包括所有 goroutine 的栈、全局对象以及不在堆中的运行时数据结构，扫描 goroutine 栈期间会暂停当前处理器；</li>
+<li>依次处理灰色队列中的对象，将对象标记成黑色并将它们指向的对象标记成灰色；</li>
+<li>使用分布式的终止算法检查剩余的工作，发现标记阶段完成后进入标记终止阶段；</li>
+</ul>
+<p>  在标记开始的时候，收集器会默认抢占 25% 的 CPU 性能，剩下的75%会分配给程序执行。但是一旦收集器认为来不及进行标记任务了，就会改变这个 25% 的性能分配。这个时候收集器会抢占程序额外的 CPU，这部分被抢占 goroutine 有个名字叫 Mark Assist。而且因为抢占 CPU的目的主要是 GC 来不及标记新增的内存，那么抢占正在分配内存的 goroutine 效果会更加好，所以分配内存速度越快的 goroutine 就会被抢占越多的资源。</p>
+<p>  除此以外 GC 还有一个额外的优化，一旦某次 GC 中用到了 Mark Assist，下次 GC 就会提前开始，目的是尽量减少 Mark Assist 的使用，从而避免影响正常的程序执行。</p>
+<h5 id="标记终止阶段">标记终止阶段</h5>
+<ul>
+<li>暂停程序、将状态切换至 <code>_GCmarktermination</code> 并关闭辅助标记的用户程序；</li>
+<li>清理处理器上的线程缓存；</li>
+</ul>
+<h5 id="清理阶段">清理阶段</h5>
+<ul>
+<li>将状态切换至<code>_GCoff</code>开始清理阶段，初始化清理状态并关闭写屏障；</li>
+<li>恢复用户程序，所有新创建的对象会标记成白色；</li>
+<li>后台并发清理所有的内存管理单元，当 goroutine 申请新的内存管理单元时就会触发清理；</li>
+</ul>
+<p>清理这个过程是并发进行的。清扫的开销会增加到分配堆内存的过程中，所以这个时间也是无感知的，不会与垃圾回收的延迟相关联。</p>
+<h5 id="总结">总结</h5>
+<p>  Go的GC最早期使用的回收算法是标记-清除算法，该算法需要在执行期间需要暂停应用程序(STW)，无法满足并发程序的实时性。后面Go的GC转为使用三色标记清除算法，并通过混合写屏障技术保证了Go并发执行GC时内存中对象的三色一致性（这里的并发指的是GC和应用程序的goroutine能同时执行）。</p>
+<p>  一次完整的垃圾回收会分为四个阶段，分别是标记准备、标记、结束标记以及清理。在标记准备和标记结束阶段会需要 STW，标记阶段会减少程序的性能，而清理阶段是不会对程序有影响的。</p>
+<h3 id="内存泄漏">内存泄漏</h3>
+<p>  尽管有垃圾回收机制，而且 Go 语言的垃圾回收已经做的非常优秀了，很多情况都不需要我们手动的释放内存，但是真的就完全没有问题了么？当然不是，Go 还面临着非常容易出现的内存泄露问题。</p>
+<p>观察如下代码，是否有问题？</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">a</span> <span class="p">[]</span><span class="kt">int</span>
+
+<span class="kd">func</span> <span class="nf">f</span><span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="p">[]</span><span class="kt">int</span> <span class="p">{</span>
+	<span class="nx">a</span> <span class="p">=</span> <span class="nx">b</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+	<span class="k">return</span> <span class="nx">a</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="o">...</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>举个生产环境中的例子，使用 Go 语言开发了一个 Gateway 服务，在发布测试环境后，假设开了3000个 TCP 连接到游戏，游戏数据没有问题，但是发现内存使用量会随着时间的推移持续增加，因此服务的Pod会隔一段时间重启一次。原因是 Gateway 是一个读写分离的 TCP 服务，每一个连接要有两个 goroutine，一个读一个写，但是 TCP 连接断开后，因为时序问题，goroutine会阻塞，一直没有结束，没有释放掉。</p>
+<p>所以，内存泄漏（Memory Leak）是指程序中已动态分配的堆内存由于某种原因程序未释放或无法释放，造成系统内存的浪费，导致程序运行速度减慢甚至系统崩溃等严重后果。可以是用 pprof 分析代码性能，配合 graphviz，二者配合能分析程序运行中的系统参数和程序参数等，定位到每个函数，更直观的看出占用内存、使用耗时等情况。</p>
+<p>回到刚才的问题，由于a和b指向同一个底层数组，a是静态存储变量被分配了固定的内存空间，如果程序<code>f(b []int)</code>结束了，b这种动态变量应该被回收了，但是由于a还在使用，尽管只是使用两个元素，后面的元素毫无作用，但是依然不会被GC，所以导致了泄漏。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">var</span> <span class="nx">a</span> <span class="p">[]</span><span class="kt">int</span> <span class="c1">// 静态存储变量
+</span><span class="c1"></span>
+<span class="kd">func</span> <span class="nf">f</span><span class="p">(</span><span class="nx">b</span> <span class="p">[]</span><span class="kt">int</span><span class="p">)</span> <span class="p">[]</span><span class="kt">int</span> <span class="p">{</span>
+	<span class="c1">// b 是动态存储变量
+</span><span class="c1"></span>	<span class="nx">a</span> <span class="p">=</span> <span class="nx">b</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>  <span class="c1">// a b 都指向同一个底层数组，只不过a只包含[:2]，b是全部
+</span><span class="c1"></span>	<span class="k">return</span> <span class="nx">a</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+	<span class="o">...</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>模拟一个内存泄漏的例子，</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">main</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">go</span> <span class="kd">func</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nx">http</span><span class="p">.</span><span class="nf">ListenAndServe</span><span class="p">(</span><span class="s">&#34;0.0.0.0:8090&#34;</span><span class="p">,</span> <span class="kc">nil</span><span class="p">)</span>
+    <span class="p">}()</span>
+
+    <span class="nx">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span>
+    <span class="kd">var</span> <span class="nx">wg</span> <span class="nx">sync</span><span class="p">.</span><span class="nx">WaitGroup</span>
+    <span class="nx">wg</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10000</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="k">go</span> <span class="nf">one</span><span class="p">(</span><span class="nx">c</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="nx">wg</span><span class="p">.</span><span class="nf">Wait</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">one</span><span class="p">(</span><span class="nx">c</span> <span class="kd">chan</span> <span class="kd">struct</span><span class="p">{})</span> <span class="p">{</span>
+    <span class="kd">var</span> <span class="nx">a</span> <span class="p">[]</span><span class="kt">int64</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10000</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">a</span> <span class="p">=</span> <span class="nb">append</span><span class="p">(</span><span class="nx">a</span><span class="p">,</span> <span class="nx">rand</span><span class="p">.</span><span class="nf">Int63</span><span class="p">())</span>
+    <span class="p">}</span>
+  
+    <span class="o">&lt;-</span><span class="nx">c</span>
+<span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>这里的 goroutine 用 channel 来模拟阻塞，一直没有关闭，所以内存会爆炸增长。</p>
+<p>提个问题，假设我们正常关闭 goroutine 了，内存就会降下来了么？</p>
+<p>当所有的 goroutine 都结束时，GC 会开始回收切片，但是被回收的内存不会直接换给操作系统，而是由 Go 的 runtime 暂时保管（在 pprof 分析中，参数 HeapIdle 值会变大），接下来如果再次需要分配空间，Go 的 runtime 可以不向操作系统申请内存，直接从自己保管的闲置内存中分配，这样可以提高程序性能。至于 Go 的 runtime 什么时候把这部分内存还给操作系统，不同的分配策略和不同的系统不太一样。</p>
+<h4 id="内存泄漏的常见场景">内存泄漏的常见场景</h4>
+<p>内存泄漏主要就是 goroutine 泄漏，这里把可能出现的场景都总结一下：</p>
+<ul>
+<li>获取长字符串中的一段导致长字符串未释放</li>
+<li>获取长slice中的一段导致长slice未释放</li>
+<li>在长slice新建slice导致泄漏</li>
+<li>goroutine泄漏</li>
+<li>time.Ticker未关闭导致泄漏</li>
+<li>Finalizer导致泄漏</li>
+<li>Deferring Function Call 导致泄漏</li>
+</ul>
+<h4 id="goroutine泄漏">Goroutine泄漏</h4>
+<p>Go 语言项目中很常见的内存泄漏是 goroutine 泄漏，导致 goroutine 泄漏有两点原因：</p>
+<ul>
+<li>goroutine 本身的堆栈大小是2 KB，我们开启一个新的 goroutine，至少会占用2KB的内存大小。当长时间的累积，数量较大时，比如开启了 100 万个 goroutine，那么至少就会占用2 GB的内存。</li>
+<li>goroutine 中的变量若指向了堆内存区，那么，当该 goroutine未被销毁，系统会认为该部分内存还不能被垃圾回收，那么就可能会占用大量的堆区内存空间。</li>
+</ul>
+<p>goroutine 泄漏大概有以下场景：</p>
+<ol>
+<li>从channel中读或写，但没有对应的写或读</li>
+</ol>
+<p>channel 分为两种类型，unbuffered channel和buffered channel，先讨论unbuffered channel。在 channel 被创建后未被关闭前，我们若从 channel 中读取数据，但又一直没有数据写入 channel 中，那么 channel 就会进入等待状态，对应的 goroutine 也就会一直阻塞着了。对应的，当我们往 channel 中写数据，但又一直没有从 channel 中读。那么也会出现被阻塞的情况。至于 buffered channel，其实和 unbuffered channel 情况是类似的，只是 buffered channel 是读完缓存后，或写完缓存后会导致阻塞。</p>
+<ol start="2">
+<li>在使用select时，所有的case都阻塞</li>
+</ol>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span><span class="lnt">16
+</span><span class="lnt">17
+</span><span class="lnt">18
+</span><span class="lnt">19
+</span><span class="lnt">20
+</span><span class="lnt">21
+</span><span class="lnt">22
+</span><span class="lnt">23
+</span><span class="lnt">24
+</span><span class="lnt">25
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">add</span><span class="p">(</span><span class="nx">c</span><span class="p">,</span> <span class="nx">quit</span> <span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">x</span><span class="p">,</span> <span class="nx">y</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="p">{</span>
+        <span class="k">select</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="nx">c</span> <span class="o">&lt;-</span> <span class="nx">x</span><span class="p">:</span>
+            <span class="nx">x</span> <span class="p">=</span> <span class="nx">x</span> <span class="o">+</span> <span class="nx">y</span>
+        <span class="k">case</span> <span class="o">&lt;-</span><span class="nx">quit</span><span class="p">:</span>
+            <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;quit&#34;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">Add</span><span class="p">()</span> <span class="p">{</span>
+    <span class="nx">c</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span>
+    <span class="nx">quit</span> <span class="o">:=</span> <span class="nb">make</span><span class="p">(</span><span class="kd">chan</span> <span class="kt">int</span><span class="p">)</span>
+
+    <span class="k">go</span> <span class="nf">add</span><span class="p">(</span><span class="nx">c</span><span class="p">,</span> <span class="nx">quit</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="nx">i</span> <span class="o">:=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="p">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="o">&lt;-</span><span class="nx">c</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// close(quit)
+</span><span class="c1"></span><span class="p">}</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>当 Add 函数 for 循环了 10 次之后，add 函数就会一直阻塞了，也就出现了 goroutine 泄漏。正确的做法应该是在合适的时间将 quit 关闭，那么 add 协程就可以安全退出了。</p>
+<ol start="3">
+<li>goroutine 进入死循环</li>
+</ol>
+<p>由于代码逻辑的 bug，导致 goroutine 进入了死循环，导致资源无法释放。</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt">1
+</span><span class="lnt">2
+</span><span class="lnt">3
+</span><span class="lnt">4
+</span><span class="lnt">5
+</span><span class="lnt">6
+</span><span class="lnt">7
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-go" data-lang="go"><span class="kd">func</span> <span class="nf">loop</span><span class="p">()</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">{</span>
+        <span class="nx">fmt</span><span class="p">.</span><span class="nf">Println</span><span class="p">(</span><span class="s">&#34;loop&#34;</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">go</span> <span class="nf">loop</span><span class="p">()</span>
+</code></pre></td></tr></table>
+</div>
+</div><p>如何预防 goroutine 泄漏呢？这个问题就要交给开发者自己了，每当我们使用 goroutine 或者 channel 的时候就要想好该如何结束或是如何将其关闭，想好 channel 何时可能出现阻塞，以及阻塞的具体情况，而且避免以死循环的逻辑写代码。</p>
+<h3 id="常见内存面试题">常见内存面试题</h3>
+<ol>
+<li>Golang 的内存模型 ( 米哈游 )</li>
+</ol>
+<p>将对象分为微小对象、小对象、大对象，使用三级管理结构mcache、mcentral、mheap用于管理、缓存加速span对象的访问和分配，使用精准的位图管理已分配的和未分配的对象及对象的大小。</p>
+<p>Go语言运行时依靠细微的对象切割、极致的多级缓存、精准的位图管理实现了对内存的精细化管理以及快速的内存访问，同时减少了内存的碎片。</p>
+<p>注：如果问的深入，要答四级内存块管理和Mheap的缓存查找、基数树查找等</p>
+<ol start="2">
+<li>简述一下 GC 的原理，三色标记法？( b站 )</li>
+</ol>
+<ul>
+<li>
+<p>初始化状态下所有对象都是白色的。</p>
+</li>
+<li>
+<p>从根节点开始遍历所有对象，把遍历到的对象变成灰色对象</p>
+</li>
+<li>
+<p>遍历灰色对象，将灰色对象引用的对象也变成灰色对象，然后将遍历过的灰色对象变成黑色对象</p>
+</li>
+<li>
+<p>循环上一步骤，知道灰色对象全部变黑色。</p>
+</li>
+<li>
+<p>通过写屏障检测对象有变化。重复以上操作</p>
+</li>
+<li>
+<p>收集所有的白色对象（垃圾）</p>
+</li>
+</ul>
+<ol start="3">
+<li>Go的垃圾回收，什么时候触发？( 滴滴 )</li>
+</ol>
+<p>主动触发(手动触发)，通过调用 runtime.GC 来触发 GC，此调用阻塞式地等待当前 GC 运行完毕。</p>
+<p>被动触发，分为两种方式：</p>
+<ul>
+<li>使用步调（Pacing）算法，其核心思想是控制内存增长的比例，每次内存分配时检查当前内存分配量是否已达到阈值（环境变量GoGC）：默认100%，即当内存扩大一倍时启用GC。</li>
+<li>使用系统监控，当超过两分钟没有产生任何GC时，强制触发 GC。</li>
+</ul>
+<ol start="4">
+<li>介绍一下 Go 的 GC ？( 深信服、腾讯、小米、学而思、Aibee、阿里、字节跳动、滴滴、蚂蚁、快手、猿辅导、Shoppe、哔哩哔哩 )</li>
+</ol>
+<p>标记清除:</p>
+<p>此算法主要有两个主要的步骤：</p>
+<p>标记(Mark phase)</p>
+<p>清除(Sweep phase)</p>
+<p>第一步，找出不可达的对象，然后做上标记。</p>
+<p>第二步，回收标记好的对象。</p>
+<p>操作非常简单，但是有一点需要额外注意：mark and sweep 算法在执行的时候，需要程序暂停！即 stop the world。</p>
+<p>也就是说，这段时间程序会卡在哪儿。故中文翻译成 卡顿.</p>
+<p>标记-清扫(Mark And Sweep)算法存在什么问题？</p>
+<p>标记-清扫(Mark And Sweep)算法这种算法虽然非常的简单，但是还存在一些问题：</p>
+<p>STW，stop the world；让程序暂停，程序出现卡顿。</p>
+<p>标记需要扫描整个heap</p>
+<p>清除数据会产生heap碎片</p>
+<p>这里面最重要的问题就是：mark-and-sweep 算法会暂停整个程序。</p>
+<p>三色并发标记法:</p>
+<ul>
+<li>首先：程序创建的对象都标记为白色。</li>
+<li>gc开始：扫描所有可到达的对象，标记为灰色</li>
+<li>从灰色对象中找到其引用对象标记为灰色，把灰色对象本身标记为黑色</li>
+<li>监视对象中的内存修改，并持续上一步的操作，直到灰色标记的对象不存在</li>
+<li>此时，gc回收白色对象</li>
+<li>最后，将所有黑色对象变为白色，并重复以上所有过程。</li>
+</ul>
+<p>混合写屏障:</p>
+<p>当gc进行中时，新创建一个对象，按照三色标记法的步骤，对象会被标记为白色,这样新生成的对象最后会被清除掉，这样会影响程序逻辑.</p>
+<p>golang引入写屏障机制.可以监控对象的内存修改，并对对象进行重新标记.</p>
+<p>gc一旦开始，无论是创建对象还是对象的引用改变，都会先变为灰色。</p>
+<ol start="5">
+<li>介绍一下逃逸分析？为什么要逃逸分析？常见的逃逸类型？Go 中的逃逸准则 ( 百度、哔哩哔哩、字节跳动、蚂蚁、网易、阿里 )</li>
+</ol>
+<p>为什么需要：通过逃逸分析，那些不需要分配到堆上的变量直接分配到栈上，堆上的变量少了不但同时减少 GC 的压力，还减轻了内存分配的开销。</p>
+<p>常见的类型：func 和 interface 数据类型，channel 或者栈空间不足逃逸。</p>
+<p>准则：如果函数外部没有引用，则优先放到栈中；如果函数外部存在引用，则必定放到堆中;</p>
+<ol start="6">
+<li>如何避免内存逃逸？( 哔哩哔哩、蚂蚁 )</li>
+</ol>
+<ul>
+<li>不要盲目使用变量指针作为参数，虽然减少了复制，但变量逃逸的开销更大。</li>
+<li>预先设定好slice长度，避免频繁超出容量，重新分配。</li>
+<li>一个经验是，指针指向的数据大部分在堆上分配的，请注意。</li>
+</ul>
+<p>出现内存逃逸的情况有：</p>
+<ul>
+<li>
+<p>发送指针或带有指针的值到channel，因为编译时候无法知道那个goroutine会在channel接受数据，编译器无法知道什么时候释放。</p>
+</li>
+<li>
+<p>在一个切片上存储指针或带指针的值。比如[]*string，导致切片内容逃逸，其引用值一直在堆上。</p>
+</li>
+<li>
+<p>切片的append导致超出容量，切片重新分配地址，切片背后的存储基于运行时的数据进行扩充，就会在堆上分配。</p>
+</li>
+<li>
+<p>调用接口类型时，接口类型的方法调用是动态调度，实际使用的具体实现只能在运行时确定，如一个接口类型为io.Reader的变量r，对r.Read(b)的调用将导致r的值和字节片b的后续转义并因此分配到堆上。</p>
+</li>
+<li>
+<p>在方法内把局部变量指针返回，被外部引用，其生命周期大于栈，导致内存溢出。</p>
+</li>
+</ul>
+<hr>
+<p>  OK！以上就是对于内存部分的浅显说明，我是将很多大牛的文章内容让自己理解的更好做了总结，如有问题可以联系我进行修改和讨论。
+  Life is fantastic !</p>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/go/">go</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    
+
+<aside class="related-contents--wrapper">
+    <h2 class="section-title">Related contents</h2>
+    <div class="related-contents">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/memory-alignment/">
+        
+        
+            <div class="article-image">
+                <img src="/p/memory-alignment/memoryalignment.cf5bdaf3e8024a4ec58c5ab91f7efffa_hu02570da8dff591db14e92b986bdd1dc3_682341_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——内存对齐"
+                        data-key="memory-alignment" 
+                        data-hash="md5-z1va8&#43;gCSk7FjFq5H37/&#43;g==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——内存对齐</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/map/">
+        
+        
+            <div class="article-image">
+                <img src="/p/map/gomap.c14fa8e9b6a98316f81135a702615a97_hueb06b1d9a0d79dfdcc90f95f1ba3b9ea_886458_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——Map的底层介绍及扩缩容机制"
+                        data-key="map" 
+                        data-hash="md5-wU&#43;o6bapgxb4ETWnAmFalw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——Map的底层介绍及扩缩容机制</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/defer/">
+        
+        
+            <div class="article-image">
+                <img src="/p/defer/godefer.ccf184477fdc8cc6059d4d2ec505e01e_hu7e4671ba8c4acd05ae2c2aa9b1ac6fe3_177012_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——延迟函数defer的使用"
+                        data-key="defer" 
+                        data-hash="md5-zPGER3/cjMYFnU0uxQXgHg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——延迟函数defer的使用</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/slice/">
+        
+        
+            <div class="article-image">
+                <img src="/p/slice/goslice.3df9ec6a4a7200a05eedc5bd83b9af7a_hu1b4159d9ef01abf89b1c5b948d41a0fb_1054267_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——切片(Slice)的坑"
+                        data-key="slice" 
+                        data-hash="md5-PfnsakpyAKBe7cW9g7mveg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——切片(Slice)的坑</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 Zonzee Li 👨‍💻
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.11.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    <aside class="sidebar right-sidebar sticky">
+        
+            
+                
+    <section class="widget archives">
+        <div class="widget-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <line x1="5" y1="9" x2="19" y2="9" />
+  <line x1="5" y1="15" x2="19" y2="15" />
+  <line x1="11" y1="4" x2="7" y2="20" />
+  <line x1="17" y1="4" x2="13" y2="20" />
+</svg>
+
+
+
+        </div>
+        <h2 class="widget-title section-title">Table of contents</h2>
+        
+        <div class="widget--toc">
+            <nav id="TableOfContents">
+  <ol>
+    <li><a href="#前言">前言</a>
+      <ol>
+        <li><a href="#内存对齐">内存对齐</a>
+          <ol>
+            <li><a href="#内存对齐规则">内存对齐规则</a></li>
+          </ol>
+        </li>
+        <li><a href="#内存分配">内存分配</a>
+          <ol>
+            <li><a href="#基础概念">基础概念</a></li>
+            <li><a href="#小于-32-kb-内存块的分配策略">小于 32 KB 内存块的分配策略</a></li>
+            <li><a href="#大于-32-kb-内存块的内存分配">大于 32 KB 内存块的内存分配</a></li>
+          </ol>
+        </li>
+        <li><a href="#逃逸分析">逃逸分析</a></li>
+        <li><a href="#垃圾回收">垃圾回收</a>
+          <ol>
+            <li><a href="#三色标记法">三色标记法</a></li>
+            <li><a href="#写屏障">写屏障</a></li>
+            <li><a href="#三色不变性">三色不变性</a></li>
+            <li><a href="#屏障技术">屏障技术</a></li>
+            <li><a href="#go-的混合写屏障">Go 的混合写屏障</a></li>
+            <li><a href="#一次完整的gc过程">一次完整的GC过程</a></li>
+          </ol>
+        </li>
+        <li><a href="#内存泄漏">内存泄漏</a>
+          <ol>
+            <li><a href="#内存泄漏的常见场景">内存泄漏的常见场景</a></li>
+            <li><a href="#goroutine泄漏">Goroutine泄漏</a></li>
+          </ol>
+        </li>
+        <li><a href="#常见内存面试题">常见内存面试题</a></li>
+      </ol>
+    </li>
+  </ol>
+</nav>
+        </div>
+    </section>
+
+            
+        
+    </aside>
+
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>
