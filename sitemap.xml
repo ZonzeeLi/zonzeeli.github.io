@@ -3,24 +3,45 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://zonzeeli.github.io/categories/</loc>
-    <lastmod>2022-06-13T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://zonzeeli.github.io/categories/go/</loc>
-    <lastmod>2022-06-13T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://zonzeeli.github.io/tags/go/</loc>
-    <lastmod>2022-06-13T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://zonzeeli.github.io/p/memory-management/</loc>
-    <lastmod>2022-06-13T00:00:00+00:00</lastmod>
+    <lastmod>2022-11-17T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://zonzeeli.github.io/post/</loc>
-    <lastmod>2022-06-13T00:00:00+00:00</lastmod>
+    <lastmod>2022-11-17T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://zonzeeli.github.io/tags/</loc>
-    <lastmod>2022-06-13T00:00:00+00:00</lastmod>
+    <lastmod>2022-11-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/p/windterm/</loc>
+    <lastmod>2022-11-17T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://zonzeeli.github.io/</loc>
+    <lastmod>2022-11-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/tags/%E6%95%99%E7%A8%8B/</loc>
+    <lastmod>2022-11-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/</loc>
+    <lastmod>2022-11-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/p/windows-terminal/</loc>
+    <lastmod>2022-10-26T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/categories/go/</loc>
+    <lastmod>2022-08-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/tags/go/</loc>
+    <lastmod>2022-08-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/tags/grpc/</loc>
+    <lastmod>2022-08-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/categories/grpc/</loc>
+    <lastmod>2022-08-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/p/httprule/</loc>
+    <lastmod>2022-08-17T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>https://zonzeeli.github.io/p/memory-management/</loc>
     <lastmod>2022-06-13T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://zonzeeli.github.io/categories/git/</loc>
@@ -90,12 +111,6 @@
     <lastmod>2021-03-27T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://zonzeeli.github.io/p/make-blog/</loc>
-    <lastmod>2021-03-27T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://zonzeeli.github.io/tags/%E6%95%99%E7%A8%8B/</loc>
-    <lastmod>2021-03-27T00:00:00+00:00</lastmod>
-  </url><url>
-    <loc>https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/</loc>
     <lastmod>2021-03-27T00:00:00+00:00</lastmod>
   </url><url>
     <loc>https://zonzeeli.github.io/tags/%E6%95%B0%E6%8D%AE%E7%BB%93%E6%9E%84/</loc>

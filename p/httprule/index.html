@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en-us" dir="ltr">
+    <head><meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1'><meta name='description' content='gRPC中google.api对http请求中的一些映射规则及HttpRule的简介'><title>gRPC-google.api的HttpRule介绍</title>
+
+<link rel='canonical' href='https://zonzeeli.github.io/p/httprule/'>
+
+<link rel="stylesheet" href="/scss/style.min.450926226e724574a6b936335ea06111f8aeb253d932c86cb2cc807341cd2889.css"><meta property='og:title' content='gRPC-google.api的HttpRule介绍'>
+<meta property='og:description' content='gRPC中google.api对http请求中的一些映射规则及HttpRule的简介'>
+<meta property='og:url' content='https://zonzeeli.github.io/p/httprule/'>
+<meta property='og:site_name' content='Zonzee Li 👨‍💻'>
+<meta property='og:type' content='article'><meta property='article:section' content='Post' /><meta property='article:tag' content='go' /><meta property='article:tag' content='gRPC' /><meta property='article:published_time' content='2022-08-17T00:00:00&#43;00:00'/><meta property='article:modified_time' content='2022-08-17T00:00:00&#43;00:00'/><meta property='og:image' content='https://zonzeeli.github.io/p/httprule/grpcgooleapi.jpg' />
+<meta name="twitter:title" content="gRPC-google.api的HttpRule介绍">
+<meta name="twitter:description" content="gRPC中google.api对http请求中的一些映射规则及HttpRule的简介"><meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content='https://zonzeeli.github.io/p/httprule/grpcgooleapi.jpg' />
+    </head>
+    <body class="
+    article-page
+    ">
+    <script>
+        (function() {
+            const colorSchemeKey = 'StackColorScheme';
+            if(!localStorage.getItem(colorSchemeKey)){
+                localStorage.setItem(colorSchemeKey, "auto");
+            }
+        })();
+    </script><script>
+    (function() {
+        const colorSchemeKey = 'StackColorScheme';
+        const colorSchemeItem = localStorage.getItem(colorSchemeKey);
+        const supportDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches === true;
+
+        if (colorSchemeItem == 'dark' || colorSchemeItem === 'auto' && supportDarkMode) {
+            
+
+            document.documentElement.dataset.scheme = 'dark';
+        } else {
+            document.documentElement.dataset.scheme = 'light';
+        }
+    })();
+</script>
+<div class="container main-container flex on-phone--column extended"><aside class="sidebar left-sidebar sticky ">
+    <button class="hamburger hamburger--spin" type="button" id="toggle-menu" aria-label="Toggle Menu">
+        <span class="hamburger-box">
+            <span class="hamburger-inner"></span>
+        </span>
+    </button>
+
+    <header>
+        
+            
+            <figure class="site-avatar">
+                <a href="/">
+                
+                    
+                    
+                    
+                        
+                        <img src="/img/avatar_hu77a3462afc37200b06a1519079618b2f_1084312_300x0_resize_box_3.png" width="300"
+                            height="300" class="site-logo" loading="lazy" alt="Avatar">
+                    
+                
+                </a>
+                
+                    <span class="emoji">💻</span>
+                
+            </figure>
+            
+        
+        
+        <div class="site-meta">
+            <h1 class="site-name"><a href="/">Zonzee Li 👨‍💻</a></h1>
+            <h2 class="site-description">一个耐心学习的小程序员。记录生活，享受生活的Gopher。</h2>
+        </div>
+    </header><ol class="social-menu">
+            
+                <li>
+                    <a 
+                        href='https://github.com/ZonzeeLi'
+                        target="_blank"
+                        title="GitHub"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-github" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M9 19c-4.3 1.4 -4.3 -2.5 -6 -3m12 5v-3.5c0 -1 .1 -1.4 -.5 -2c2.8 -.3 5.5 -1.4 5.5 -6a4.6 4.6 0 0 0 -1.3 -3.2a4.2 4.2 0 0 0 -.1 -3.2s-1.1 -.3 -3.5 1.3a12.3 12.3 0 0 0 -6.2 0c-2.4 -1.6 -3.5 -1.3 -3.5 -1.3a4.2 4.2 0 0 0 -.1 3.2a4.6 4.6 0 0 0 -1.3 3.2c0 4.6 2.7 5.7 5.5 6c-.6 .6 -.6 1.2 -.5 2v3.5" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+                <li>
+                    <a 
+                        href='https://twitter.com'
+                        target="_blank"
+                        title="Twitter"
+                    >
+                        
+                        
+                            <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-brand-twitter" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+  <path d="M22 4.01c-1 .49 -1.98 .689 -3 .99c-1.121 -1.265 -2.783 -1.335 -4.38 -.737s-2.643 2.06 -2.62 3.737v1c-3.245 .083 -6.135 -1.395 -8 -4c0 0 -4.182 7.433 4 11c-1.872 1.247 -3.739 2.088 -6 2c3.308 1.803 6.913 2.423 10.034 1.517c3.58 -1.04 6.522 -3.723 7.651 -7.742a13.84 13.84 0 0 0 .497 -3.753c-.002 -.249 1.51 -2.772 1.818 -4.013z" />
+</svg>
+
+
+
+                        
+                    </a>
+                </li>
+            
+        </ol><ol class="menu" id="main-menu">
+        
+        
+        
+
+        <li >
+            <a href='/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-home" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <polyline points="5 12 3 12 12 3 21 12 19 12" />
+  <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+  <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+</svg>
+
+
+
+                
+                <span>Home</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/about-me/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-user" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="7" r="4" />
+  <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+</svg>
+
+
+
+                
+                <span>About me</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/archives/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-archive" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <rect x="3" y="4" width="18" height="4" rx="2" />
+  <path d="M5 8v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-10" />
+  <line x1="10" y1="12" x2="14" y2="12" />
+</svg>
+
+
+
+                
+                <span>Archives</span>
+            </a>
+        </li>
+        
+        
+
+        <li >
+            <a href='/search/' >
+                
+                
+                    
+                
+                
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-search" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="10" cy="10" r="7" />
+  <line x1="21" y1="21" x2="15" y2="15" />
+</svg>
+
+
+
+                
+                <span>Search</span>
+            </a>
+        </li>
+        
+
+        <div class="menu-bottom-section">
+            
+            
+                <li id="dark-mode-toggle">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="8" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-toggle-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="16" cy="12" r="2" />
+  <rect x="2" y="6" width="20" height="12" rx="6" />
+</svg>
+
+
+
+                    <span>Dark Mode</span>
+                </li>
+            
+        </div>
+    </ol>
+</aside>
+<main class="main full-width">
+    <article class="has-image main-article">
+    <header class="article-header">
+        <div class="article-image">
+            <a href="/p/httprule/">
+                <img src="/p/httprule/grpcgooleapi_hu76928c90444e9d8bd04a53b1f2bdf9cc_731648_800x0_resize_q75_box.jpg"
+                        srcset="/p/httprule/grpcgooleapi_hu76928c90444e9d8bd04a53b1f2bdf9cc_731648_800x0_resize_q75_box.jpg 800w, /p/httprule/grpcgooleapi_hu76928c90444e9d8bd04a53b1f2bdf9cc_731648_1600x0_resize_q75_box.jpg 1600w"
+                        width="800" 
+                        height="532" 
+                        loading="lazy"
+                        alt="Featured image of post gRPC-google.api的HttpRule介绍" />
+                
+            </a>
+        </div>
+    
+
+    <div class="article-details">
+    
+    <header class="article-category">
+        
+            <a href="/categories/go/" >
+                Go
+            </a>
+        
+            <a href="/categories/grpc/" >
+                gRPC
+            </a>
+        
+    </header>
+    
+
+    <div class="article-title-wrapper">
+        <h2 class="article-title">
+            <a href="/p/httprule/">gRPC-google.api的HttpRule介绍</a>
+        </h2>
+    
+        
+        <h3 class="article-subtitle">
+            gRPC中google.api对http请求中的一些映射规则及HttpRule的简介
+        </h3>
+        
+    </div>
+
+    
+    <footer class="article-time">
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M11.795 21h-6.795a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4" />
+  <circle cx="18" cy="18" r="4" />
+  <path d="M15 3v4" />
+  <path d="M7 3v4" />
+  <path d="M3 11h16" />
+  <path d="M18 16.496v1.504l1 1" />
+</svg>
+                <time class="article-time--published">Aug 17, 2022</time>
+            </div>
+        
+
+        
+            <div>
+                <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <polyline points="12 7 12 12 15 15" />
+</svg>
+
+
+
+                <time class="article-time--reading">
+                    3 minute read
+                </time>
+            </div>
+        
+    </footer>
+    
+
+    
+</div>
+</header>
+
+    <section class="article-content">
+    
+    
+    <h2 id="http-rule">HTTP Rule</h2>
+<p>gRPC Transcoding 是一种用于在 gRPC 方法和一个或多个 HTTP REST 端点之间进行映射的功能。它允许开发人员构建一个同时支持 gRPC API 和 REST API 的 API 服务。HttpRule 定义 gRPC/REST 映射的模式。映射指定 gRPC 请求消息的不同部分如何映射到 URL 路径、URL 查询参数和 HTTP 请求正文。它还控制 gRPC 响应消息如何映射到 HTTP 响应正文。HttpRule 通常被指定为 <code>google.api.http</code> gRPC 方法的注解。</p>
+<p>每个映射指定一个 URL 路径模板和一个 HTTP 方法。路径模板可以引用 gRPC 请求消息中的一个或多个字段，只要每个字段是原始（非消息）类型的非重复字段即可。路径模板控制请求消息的字段如何映射到 URL 路径。</p>
+<p>例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-proto" data-lang="proto"><span class="kd">service</span> <span class="n">Messaging</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">GetMessage</span><span class="p">(</span><span class="n">GetMessageRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>    <span class="k">option</span> <span class="p">(</span><span class="n">google.api.http</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>        <span class="n">get</span><span class="o">:</span> <span class="s">&#34;/v1/{name=messages/*}&#34;</span><span class="err">
+</span><span class="err"></span>    <span class="p">};</span><span class="err">
+</span><span class="err"></span>  <span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">GetMessageRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">name</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// Mapped to URL path.
+</span><span class="c1"></span><span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">Message</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">text</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// The resource content.
+</span><span class="c1"></span><span class="p">}</span><span class="err">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>这启用了 HTTP REST 到 gRPC 的映射，如下：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>HTTP</th>
+<th>gRPC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET /v1/messages/123456</td>
+<td>GetMessage(name: &ldquo;messages/123456&rdquo;)</td>
+</tr>
+</tbody>
+</table></div>
+<p>如果没有 HTTP 请求 body，则请求消息中没有被路径模板绑定的任何字段都会自动成为 HTTP query parameters。例如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span><span class="lnt">15
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-proto" data-lang="proto"><span class="kd">service</span> <span class="n">Messaging</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">GetMessage</span><span class="p">(</span><span class="n">GetMessageRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>    <span class="k">option</span> <span class="p">(</span><span class="n">google.api.http</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>        <span class="n">get</span><span class="o">:</span><span class="s">&#34;/v1/messages/{message_id}&#34;</span><span class="err">
+</span><span class="err"></span>    <span class="p">};</span><span class="err">
+</span><span class="err"></span>  <span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">GetMessageRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kd">message</span> <span class="nc">SubMessage</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>    <span class="kt">string</span> <span class="n">subfield</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span>  <span class="p">}</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">message_id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// Mapped to URL path.
+</span><span class="c1"></span>  <span class="kt">int64</span> <span class="n">revision</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>    <span class="c1">// Mapped to URL query parameter `revision`.
+</span><span class="c1"></span>  <span class="n">SubMessage</span> <span class="n">sub</span> <span class="o">=</span> <span class="mi">3</span><span class="p">;</span>    <span class="c1">// Mapped to URL query parameter `sub.subfield`.
+</span><span class="c1"></span><span class="p">}</span><span class="err">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>这启用了 HTTP JSON 到 RPC 映射，如下：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>HTTP</th>
+<th>gRPC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET /v1/messages/123456?revision=2&amp;sub.subfield=foo</td>
+<td>GetMessage(message_id: &ldquo;123456&rdquo; revision: 2 sub: SubMessage(subfield: &ldquo;foo&rdquo;))</td>
+</tr>
+</tbody>
+</table></div>
+<p>这里需要注意的是，映射到 URL 查询参数的字段必须具有原始类型或重复的原始类型或非重复的消息类型。在 repeated 类型的情况下，参数可以在 URL 中重复为<code>...?param=A&amp;param=B</code>. 在 message 类型的情况下，消息的每个字段都映射到一个单独的参数，例如<code>...?foo.a=A&amp;foo.b=B&amp;foo.c=C</code>。</p>
+<p>对于可以添加 body 的 HTTP 方法，body 字段指定映射。比如 message 集合上的 REST update 方法：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-proto" data-lang="proto"><span class="kd">service</span> <span class="n">Messaging</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">UpdateMessage</span><span class="p">(</span><span class="n">UpdateMessageRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>    <span class="k">option</span> <span class="p">(</span><span class="n">google.api.http</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>      <span class="n">patch</span><span class="o">:</span> <span class="s">&#34;/v1/messages/{message_id}&#34;</span><span class="err">
+</span><span class="err"></span>      <span class="n">body</span><span class="o">:</span> <span class="s">&#34;message&#34;</span><span class="err">
+</span><span class="err"></span>    <span class="p">};</span><span class="err">
+</span><span class="err"></span>  <span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">UpdateMessageRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">message_id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="c1">// mapped to the URL
+</span><span class="c1"></span>  <span class="n">Message</span> <span class="kd">message</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span>   <span class="c1">// mapped to the body
+</span><span class="c1"></span><span class="p">}</span><span class="err">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>启用了以下 HTTP JSON 到 RPC 映射，其中请求正文中 JSON 的表示由 protos JSON 编码确定：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>HTTP</th>
+<th>gRPC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PATCH /v1/messages/123456 { &ldquo;text&rdquo;: &ldquo;Hi!&rdquo; }</td>
+<td>UpdateMessage(message_id: &ldquo;123456&rdquo; message { text: &ldquo;Hi!&rdquo; })</td>
+</tr>
+</tbody>
+</table></div>
+<p>可以在 body 映射中使用<code>*</code>来表示所有不受路径模板绑定的字段都应该映射到 body中。比如：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-proto" data-lang="proto"><span class="kd">service</span> <span class="n">Messaging</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">UpdateMessage</span><span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>    <span class="k">option</span> <span class="p">(</span><span class="n">google.api.http</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>      <span class="n">patch</span><span class="o">:</span> <span class="s">&#34;/v1/messages/{message_id}&#34;</span><span class="err">
+</span><span class="err"></span>      <span class="n">body</span><span class="o">:</span> <span class="s">&#34;*&#34;</span><span class="err">
+</span><span class="err"></span>    <span class="p">};</span><span class="err">
+</span><span class="err"></span>  <span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">Message</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">message_id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">text</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>启用了 HTTP JSON 到 RPC 映射，如下：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>HTTP</th>
+<th>gRPC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PATCH /v1/messages/123456 { &ldquo;text&rdquo;: &ldquo;Hi!&rdquo; }</td>
+<td>UpdateMessage(message_id: &ldquo;123456&rdquo; text: &ldquo;Hi!&quot;)</td>
+</tr>
+</tbody>
+</table></div>
+<p>请注意，在正文映射中使用<code>*</code>时，不可能有 HTTP 参数，因为所有不受路径绑定的字段都以正文结尾。 这使得该选项在定义 REST API 时很少在实践中使用。<code>*</code>的常见用法是在根本不使用 URL 来传输数据的自定义方法中。</p>
+<p>可以使用该additional_bindings选项为一个 RPC 定义多个 HTTP 方法。例子：</p>
+<div class="highlight"><div class="chroma">
+<table class="lntable"><tr><td class="lntd">
+<pre tabindex="0" class="chroma"><code><span class="lnt"> 1
+</span><span class="lnt"> 2
+</span><span class="lnt"> 3
+</span><span class="lnt"> 4
+</span><span class="lnt"> 5
+</span><span class="lnt"> 6
+</span><span class="lnt"> 7
+</span><span class="lnt"> 8
+</span><span class="lnt"> 9
+</span><span class="lnt">10
+</span><span class="lnt">11
+</span><span class="lnt">12
+</span><span class="lnt">13
+</span><span class="lnt">14
+</span></code></pre></td>
+<td class="lntd">
+<pre tabindex="0" class="chroma"><code class="language-proto" data-lang="proto"><span class="kd">service</span> <span class="n">Messaging</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="k">rpc</span> <span class="n">GetMessage</span><span class="p">(</span><span class="n">GetMessageRequest</span><span class="p">)</span> <span class="k">returns</span> <span class="p">(</span><span class="n">Message</span><span class="p">)</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>    <span class="k">option</span> <span class="p">(</span><span class="n">google.api.http</span><span class="p">)</span> <span class="o">=</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>      <span class="n">get</span><span class="o">:</span> <span class="s">&#34;/v1/messages/{message_id}&#34;</span><span class="err">
+</span><span class="err"></span>      <span class="n">additional_bindings</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>        <span class="n">get</span><span class="o">:</span> <span class="s">&#34;/v1/users/{user_id}/messages/{message_id}&#34;</span><span class="err">
+</span><span class="err"></span>      <span class="p">}</span><span class="err">
+</span><span class="err"></span>    <span class="p">};</span><span class="err">
+</span><span class="err"></span>  <span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span><span class="err"></span><span class="kd">message</span> <span class="nc">GetMessageRequest</span> <span class="p">{</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">message_id</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span><span class="err">
+</span><span class="err"></span>  <span class="kt">string</span> <span class="n">user_id</span> <span class="o">=</span> <span class="mi">2</span><span class="p">;</span><span class="err">
+</span><span class="err"></span><span class="p">}</span><span class="err">
+</span></code></pre></td></tr></table>
+</div>
+</div><p>启用了两种可选的 HTTP JSON 到 RPC 映射，如下：</p>
+<div class="table-wrapper"><table>
+<thead>
+<tr>
+<th>HTTP</th>
+<th>gRPC</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GET /v1/messages/123456</td>
+<td>GetMessage(message_id: &ldquo;123456&rdquo;)</td>
+</tr>
+<tr>
+<td>GET /v1/users/me/messages/123456</td>
+<td>GetMessage(user_id: &ldquo;me&rdquo; message_id: &ldquo;123456&rdquo;)</td>
+</tr>
+</tbody>
+</table></div>
+<p>接下来介绍 HTTP 的映射规则：</p>
+<ol>
+<li>请求字段（请求消息中的递归扩展嵌套消息）分为以下三类：</li>
+</ol>
+<ul>
+<li>路径模板引用的字段。它们通过 URL 路径传递。</li>
+<li>引用的字段HttpRule.body。它们通过 HTTP 请求正文传递。</li>
+<li>所有其他字段都是通过 URL 查询参数传递的，参数名称是请求消息中的字段路径。一个重复的字段可以表示为同名的多个查询参数。</li>
+</ul>
+<ol start="2">
+<li>如果HttpRule.body为<code>*</code>，则没有 URL 查询参数，所有字段都通过 URL 路径和 HTTP 请求正文传递。</li>
+<li>如果HttpRule.body省略，则没有 HTTP 请求正文，所有字段都通过 URL 路径和 URL 查询参数传递。</li>
+</ol>
+
+</section>
+
+
+    <footer class="article-footer">
+    
+    <section class="article-tags">
+        
+            <a href="/tags/go/">go</a>
+        
+            <a href="/tags/grpc/">gRPC</a>
+        
+    </section>
+
+
+    
+    <section class="article-copyright">
+        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <circle cx="12" cy="12" r="9" />
+  <path d="M14.5 9a3.5 4 0 1 0 0 6" />
+</svg>
+
+
+
+        <span>Licensed under CC BY-NC-SA 4.0</span>
+    </section>
+    </footer>
+
+
+    
+        <link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css"integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn"crossorigin="anonymous"
+            ><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js"integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8"crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js"integrity="sha384-vZTG03m&#43;2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl"crossorigin="anonymous"
+                defer
+                >
+            </script><script>
+    window.addEventListener("DOMContentLoaded", () => {
+        renderMathInElement(document.querySelector(`.article-content`), {
+            delimiters: [
+                { left: "$$", right: "$$", display: true },
+                { left: "$", right: "$", display: false },
+                { left: "\\(", right: "\\)", display: false },
+                { left: "\\[", right: "\\]", display: true }
+            ]
+        });})
+</script>
+    
+</article>
+
+    
+
+    
+
+<aside class="related-contents--wrapper">
+    <h2 class="section-title">Related contents</h2>
+    <div class="related-contents">
+        <div class="flex article-list--tile">
+            
+                
+<article class="has-image">
+    <a href="/p/memory-management/">
+        
+        
+            <div class="article-image">
+                <img src="/p/memory-management/memorymanagement.d1c67ec4f7f2f1670fb44d00d3d09198_hu401943aa3a47c07a1760c3a69afc10a0_2088324_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——内存管理"
+                        data-key="memory-management" 
+                        data-hash="md5-0cZ&#43;xPfy8WcPtE0A09CRmA==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——内存管理</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/memory-alignment/">
+        
+        
+            <div class="article-image">
+                <img src="/p/memory-alignment/memoryalignment.cf5bdaf3e8024a4ec58c5ab91f7efffa_hu02570da8dff591db14e92b986bdd1dc3_682341_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——内存对齐"
+                        data-key="memory-alignment" 
+                        data-hash="md5-z1va8&#43;gCSk7FjFq5H37/&#43;g==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——内存对齐</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/map/">
+        
+        
+            <div class="article-image">
+                <img src="/p/map/gomap.c14fa8e9b6a98316f81135a702615a97_hueb06b1d9a0d79dfdcc90f95f1ba3b9ea_886458_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——Map的底层介绍及扩缩容机制"
+                        data-key="map" 
+                        data-hash="md5-wU&#43;o6bapgxb4ETWnAmFalw==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——Map的底层介绍及扩缩容机制</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/defer/">
+        
+        
+            <div class="article-image">
+                <img src="/p/defer/godefer.ccf184477fdc8cc6059d4d2ec505e01e_hu7e4671ba8c4acd05ae2c2aa9b1ac6fe3_177012_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——延迟函数defer的使用"
+                        data-key="defer" 
+                        data-hash="md5-zPGER3/cjMYFnU0uxQXgHg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——延迟函数defer的使用</h2>
+        </div>
+    </a>
+</article>
+            
+                
+<article class="has-image">
+    <a href="/p/slice/">
+        
+        
+            <div class="article-image">
+                <img src="/p/slice/goslice.3df9ec6a4a7200a05eedc5bd83b9af7a_hu1b4159d9ef01abf89b1c5b948d41a0fb_1054267_250x150_fill_q75_box_smart1.jpg" 
+                        width="250" 
+                        height="150" 
+                        loading="lazy"
+                        alt="Featured image of post Go语言——切片(Slice)的坑"
+                        data-key="slice" 
+                        data-hash="md5-PfnsakpyAKBe7cW9g7mveg==">
+                
+            </div>
+        
+
+        <div class="article-details">
+            <h2 class="article-title">Go语言——切片(Slice)的坑</h2>
+        </div>
+    </a>
+</article>
+            
+        </div>
+    </div>
+</aside>
+
+     
+    
+        
+    <div class="disqus-container">
+    <div id="disqus_thread"></div>
+<script type="application/javascript">
+    var disqus_config = function () {
+    
+    
+    
+    };
+    (function() {
+        if (["localhost", "127.0.0.1"].indexOf(window.location.hostname) != -1) {
+            document.getElementById('disqus_thread').innerHTML = 'Disqus comments not available by default when the website is previewed locally.';
+            return;
+        }
+        var d = document, s = d.createElement('script'); s.async = true;
+        s.src = '//' + "hugo-theme-stack" + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+        (d.head || d.body).appendChild(s);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+<a href="https://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+<style>
+    .disqus-container {
+        background-color: var(--card-background);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--shadow-l1);
+        padding: var(--card-padding);
+    }
+</style>
+
+<script>
+    window.addEventListener('onColorSchemeChange', (e) => {
+        if (DISQUS) {
+            DISQUS.reset({
+                reload: true
+            });
+        }
+    })
+</script>
+
+    
+
+    <footer class="site-footer">
+    <section class="copyright">
+        &copy; 
+        
+            2020 - 
+        
+        2022 Zonzee Li 👨‍💻
+    </section>
+    
+    <section class="powerby">
+        Built with <a href="https://gohugo.io/" target="_blank" rel="noopener">Hugo</a> <br />
+        Theme <b><a href="https://github.com/CaiJimmy/hugo-theme-stack" target="_blank" rel="noopener" data-version="3.11.0">Stack</a></b> designed by <a href="https://jimmycai.com" target="_blank" rel="noopener">Jimmy</a>
+    </section>
+</footer>
+
+
+    
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+
+    
+    <div class="pswp__bg"></div>
+
+    
+    <div class="pswp__scroll-wrap">
+
+        
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+
+        
+        <div class="pswp__ui pswp__ui--hidden">
+
+            <div class="pswp__top-bar">
+
+                
+
+                <div class="pswp__counter"></div>
+
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+
+                
+                
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                            <div class="pswp__preloader__donut"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div>
+            </div>
+
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js"integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo="crossorigin="anonymous"
+                defer
+                >
+            </script><script 
+                src="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js"integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU="crossorigin="anonymous"
+                defer
+                >
+            </script><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.css"integrity="sha256-c0uckgykQ9v5k&#43;IqViZOZKc47Jn7KQil4/MP3ySA3F8="crossorigin="anonymous"
+            ><link 
+                rel="stylesheet" 
+                href="https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.css"integrity="sha256-SBLU4vv6CA6lHsZ1XyTdhyjJxCjPif/TRkjnsyGAGnE="crossorigin="anonymous"
+            >
+
+            </main>
+    
+
+        </div>
+        <script 
+                src="https://cdn.jsdelivr.net/npm/node-vibrant@3.1.5/dist/vibrant.min.js"integrity="sha256-5NovOZc4iwiAWTYIFiIM7DxKUXKWvpVEuMEPLzcm5/g="crossorigin="anonymous"
+                
+                >
+            </script><script type="text/javascript" src="/ts/main.js" defer></script>
+<script>
+    (function () {
+        const customFont = document.createElement('link');
+        customFont.href = "https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap";
+
+        customFont.type = "text/css";
+        customFont.rel = "stylesheet";
+
+        document.head.appendChild(customFont);
+    }());
+</script>
+
+    </body>
+</html>

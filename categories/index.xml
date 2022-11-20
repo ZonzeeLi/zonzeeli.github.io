@@ -6,13 +6,29 @@
         <description>Recent content in Categories on Zonzee Li 👨‍💻</description>
         <generator>Hugo -- gohugo.io</generator>
         <language>en-us</language>
-        <lastBuildDate>Mon, 13 Jun 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://zonzeeli.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <lastBuildDate>Thu, 17 Nov 2022 00:00:00 +0000</lastBuildDate><atom:link href="https://zonzeeli.github.io/categories/index.xml" rel="self" type="application/rss+xml" /><item>
+        <title>教程</title>
+        <link>https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/</link>
+        <pubDate>Thu, 17 Nov 2022 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/</guid>
+        <description>&lt;img src="https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/%E6%95%99%E7%A8%8Bimage.png" alt="Featured image of post 教程" /&gt;</description>
+        </item>
+        <item>
         <title>Go</title>
         <link>https://zonzeeli.github.io/categories/go/</link>
-        <pubDate>Mon, 13 Jun 2022 00:00:00 +0000</pubDate>
+        <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
         
         <guid>https://zonzeeli.github.io/categories/go/</guid>
         <description>&lt;img src="https://zonzeeli.github.io/categories/go/Gobackground.jpg" alt="Featured image of post Go" /&gt;</description>
+        </item>
+        <item>
+        <title>gRPC</title>
+        <link>https://zonzeeli.github.io/categories/grpc/</link>
+        <pubDate>Wed, 17 Aug 2022 00:00:00 +0000</pubDate>
+        
+        <guid>https://zonzeeli.github.io/categories/grpc/</guid>
+        <description></description>
         </item>
         <item>
         <title>Git</title>
@@ -61,14 +77,6 @@
         
         <guid>https://zonzeeli.github.io/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/</guid>
         <description>&lt;img src="https://zonzeeli.github.io/categories/%E5%BE%AE%E6%9C%8D%E5%8A%A1/%E5%BE%AE%E6%9C%8D%E5%8A%A1backgroud.jpg" alt="Featured image of post 微服务" /&gt;</description>
-        </item>
-        <item>
-        <title>教程</title>
-        <link>https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/</link>
-        <pubDate>Sat, 27 Mar 2021 00:00:00 +0000</pubDate>
-        
-        <guid>https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/</guid>
-        <description>&lt;img src="https://zonzeeli.github.io/categories/%E6%95%99%E7%A8%8B/%E6%95%99%E7%A8%8Bimage.png" alt="Featured image of post 教程" /&gt;</description>
         </item>
         
     </channel>
